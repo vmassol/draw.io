@@ -1,0 +1,32 @@
+{
+  "appName": {
+    "message": "draw.io (Diagramly)"
+  },
+  "appDesc": {
+    "message": "Diagrams Online"
+  },
+  "appLongDesc": {
+    "message": "draw.io is a completely free Google Drive(TM) enabled diagramming application that enables you to draw:
+
+- Flowcharts
+- UML
+- Entity Relationship Diagrams
+- Network Diagrams
+- Business Process Models
+- Org Charts
+- Electronic circuits
+- Wireframing and mockups
+- and much more
+
+Features:
+- Native HTML 5 client with full IE 6-8 support.
+- Large stencil library built-in
+- Intuitive drag and drop interface
+- Image search and add functionality
+- Export to PNG/GIF/JPG/XML/SVG/PDF
+- Touch device support
+- Full source code at github - https://github.com/jgraph/draw.io.
+- Real-time collaboration.
+- Embed diagrams in blogs or wikis"
+  }
+}

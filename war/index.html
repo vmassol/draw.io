@@ -69,7 +69,7 @@
 		var MAX_HEIGHT = 6000;
 	
 		// CUSTOM_PARAMETERS - URLs for save and export
-		var EXPORT_URL = 'http://shr.diagramly.com:8080/ImageExport/export';
+		var EXPORT_URL = 'http://shr.diagramly.com/ImageExport/export';
 		var SHARE_HOST = 'http://shr.diagramly.com:8000';
 
 		var SAVE_URL = 'save';
@@ -113,7 +113,6 @@
 		 * - aa=0: Disables anti aliasing
 		 * - url=url: Opens diagram from URL (URL should be encoded)
 		 * - share=ID of shared diagram
-		 * - social=0: Disables social network in footer
 		 * - analytics=0: Disables Google Analytics
 		 * --
 		 * - sharehost=dev||sharing_host_and_port: For developers only
@@ -172,7 +171,7 @@
 		// the special bundle.
 		var mxLoadResources = false;
 		var mxLanguage = urlParams['lang'];
-		var mxLanguages = ['ar', 'de', 'es', 'fr', 'hu', 'it', 'ja', 'ko', 'nl', 'pl', 'pt-br', 'pt', 'ru', 'sr', 'sv', 'zh'];
+		var mxLanguages = ['ar', 'bs', 'de', 'es', 'fr', 'hu', 'it', 'ja', 'ko', 'nl', 'pl', 'pt-br', 'pt', 'ro', 'ru', 'sr', 'sv', 'uk', 'zh'];
 		var geBasePath = 'js';
 		var mxBasePath = 'mxgraph';
 		var mxDevUrl = 'http://' + (urlParams['devhost'] || 'devhost.jgraph.com');
@@ -268,7 +267,6 @@
 	</script>
 </head>
 <body class="geEditor">
-<div id="fb-root"></div>
 <div id="geInfo">
 	<div class="geBlock">
 		<h1>Free Online Diagramming Software</h1>
@@ -301,26 +299,26 @@
 <div id="geFooter" style="visibility:hidden;padding-top:6px;padding-left:6px;">
 	<table width="100%" height="100%" align="right">
 	  <tr> 
-	    <td id="gplus" width="18%" align="left" style="white-space:nowrap;overflow:hidden;padding-bottom:10px;">
-	      	<g:plusone size="small"></g:plusone>
-	      	<a rel="author" href="https://plus.google.com/b/100634082864796769666/" target="__blank"><img title="Draw.io on Google+" src="http://ssl.gstatic.com/images/icons/gplus-16.png" width="16" height="16" border=""></a>
+		<td width="25%" valign="top" align="left" style="white-space:nowrap;overflow:hidden;padding-top:3px;font-family:'Helvetica Neue',Arial,sans-serif;padding-right:8px;_padding-right:16px;"> 
+	      <a title="Powered by mxGraph" href="http://www.jgraph.com" target="_blank" style="font-size:8pt;text-decoration:none;font-weight:bold;color:#454545;">
+	      Powered by mxGraph
+	      </a>
 	    </td>
-	    <td id="twitter" width="32%" style="white-space:nowrap;overflow:hidden;align:right;padding-bottom:10px;padding-right:10px;padding-top:2px;"> 
-	      <a href="https://twitter.com/share" class="twitter-share-button" data-url="http://draw.io" data-text="draw.io - Draw Diagrams Online, Free HTML 5 web app" data-via="Diagramly">Tweet</a>
-	      <a href="https://twitter.com/Diagramly" class="twitter-follow-button" data-show-count="false">Follow @Diagramly</a>
-	    </td>
-	    <td width="15%" align="left" style="white-space:nowrap;overflow:hidden;padding-bottom:10px;">
-	    	<div class="fb-like" data-href="http://www.draw.io/" data-send="false" data-layout="button_count" data-width="250" data-show-faces="false"></div>
-	    </td>
-		<td width="15" valign="top" align="center" style="overflow:hidden;padding-top:3px;_padding-top:7px;font-family:'Helvetica Neue',Arial,sans-serif;padding-right:8px;_padding-right:16px;"> 
+		<td width="25%" valign="top" align="center" style="overflow:hidden;padding-top:3px;_padding-top:7px;font-family:'Helvetica Neue',Arial,sans-serif;padding-right:8px;_padding-right:16px;"> 
 	      <a title="Confluence Plugin" href="https://marketplace.atlassian.com/plugins/com.mxgraph.confluence.plugins.diagramly" target="_blank" style="font-size:8pt;white-space:nowrap;text-decoration:none;font-weight:bold;color:#454545;">
 	      	Confluence&reg Plugin
 	      </a>
 	    </td>
-		<td width="20%" valign="top" align="right" style="white-space:nowrap;overflow:hidden;padding-top:3px;font-family:'Helvetica Neue',Arial,sans-serif;padding-right:8px;_padding-right:16px;"> 
-	      <a title="Powered by mxGraph" href="http://www.jgraph.com/mxgraph.html" target="_blank" style="font-size:8pt;text-decoration:none;font-weight:bold;color:#454545;">
-	      Powered by mxGraph
-	      <img src="images/logo-small.gif" width="16" height="16" border="0" align="absmiddle" style="margin-bottom:4px;_margin-bottom:-2px;margin-left:3px;"/></a>
+		<td width="25%" valign="top" align="center" style="overflow:hidden;padding-top:3px;_padding-top:7px;font-family:'Helvetica Neue',Arial,sans-serif;padding-right:8px;_padding-right:16px;"> 
+	      <a title="Google Drive" href="http://drive.diagram.ly" target="_blank" style="font-size:8pt;white-space:nowrap;text-decoration:none;font-weight:bold;color:#454545;">
+	      	Integrate with Google Drive&reg
+	      </a>
+	    </td>
+	    <td id="gplus" width="25%" align="center" style="white-space:nowrap;overflow:hidden;padding-bottom:10px;">
+	      <a href="https://plus.google.com/b/100634082864796769666/" target="__blank"><img title="Draw.io on Google+" src="images/web/glyphicons_362_google+_alt.png" width="24" height="24" border=""></a>
+	      <a href="https://twitter.com/Diagramly" target="__blank"><img title="Draw.io on Twitter" src="images/web/glyphicons_392_twitter.png" width="24" height="24" border=""></a>
+	      <a href="http://www.facebook.com/pages/drawio/161015263923018" target="__blank"><img title="Draw.io on Facebook" src="images/web/glyphicons_390_facebook.png" width="24" height="24" border=""></a>
+	      <a href="https://github.com/jgraph/draw.io" target="__blank"><img title="Draw.io on Github" src="images/web/glyphicons_381_github.png" width="24" height="24" border=""></a>
 	    </td>
 	  </tr> 
 	</table>
@@ -373,8 +371,6 @@ if (typeof(tinyMCE) != 'undefined')
 		});
 	}
 }
-// Color picker
-mxscript('js/jscolor/jscolor.js');
 
 // Downloadify for local file save
 if (urlParams['flash'] == '1')
@@ -394,50 +390,21 @@ if (urlParams['analytics'] != '0')
 	mxinclude(('https:' == document.location.protocol ? 'https://ssl' : 'http://www') + '.google-analytics.com/ga.js');
 }
 
-if (urlParams['social'] != '0')
-{
-	!function(d,s,id){
-		var js,fjs=d.getElementsByTagName(s)[0];
-		if(!d.getElementById(id)){
-			js=d.createElement(s);
-			js.id=id;
-			js.src="//platform.twitter.com/widgets.js";
-			fjs.parentNode.insertBefore(js,fjs);
-		}
-	}(document,"script","twitter-wjs");
-	
-	if (!mxClient.IS_QUIRKS)
-	{
-		mxinclude('https://apis.google.com/js/plusone.js');
-		
-		(function(d, s, id) {
-		  var js, fjs = d.getElementsByTagName(s)[0];
-		  if (d.getElementById(id)) return;
-		  js = d.createElement(s); js.id = id;
-		  js.src = "//connect.facebook.net/en_US/all.js#xfbml=1";
-		  fjs.parentNode.insertBefore(js, fjs);
-		}(document, 'script', 'facebook-jssdk'));
-	}
-	else
-	{
-		document.getElementById('gplus').innerHTML = '';
-	}
-}
-else
-{
-	document.getElementById('gplus').innerHTML = '';
-	document.getElementById('twitter').innerHTML = '';
-}
-
 // Loads Google Image Picker API
 if (urlParams['picker'] != '0' && !mxClient.IS_IE6)
 {
 	mxscript(document.location.protocol + '//www.google.com/jsapi?autoload=%7B%22modules%22%3A%5B%7B%22name%22%3A%22picker%22%2C%22version%22%3A%221%22%2C%22language%22%3A%22' + mxClient.language + '%22%7D%5D%7D');
 }
 
+// Color dialog - do not add to diagramly.min.js due to path issues
+mxscript('js/jscolor/jscolor.js');
+
 // Used for embed dialog
-mxscript('js/deflate/rawdeflate.js');
-mxscript('js/deflate/base64.js');
+if (urlParams['dev'] == '1')
+{
+	mxscript('js/deflate/rawdeflate.js');
+	mxscript('js/deflate/base64.js');
+}
 
 // For developers only
 if (urlParams['test'] == '1')

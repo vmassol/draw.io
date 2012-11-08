@@ -1,3 +1,19 @@
+08-Nov-2012: 1.6.10.0
+
+- Adds Korean, Japanese, Russian, Bosnian and Ukrainian translations
+- Switches to port 80 for image export server
+
+31-OCT-2012: 1.6.9.2
+
+- Removed data nucleus libraries
+- Adds rawdeflate, base64 to diagramly.min.js
+- Changes color of social icons to gray
+
+30-OCT-2012: 1.6.9.1
+
+- Removes social JS
+- Uses mxGraph 1.10.4.0
+
 25-OCT-2012: 1.6.9.0
 
 - Adds Google Drive install scope

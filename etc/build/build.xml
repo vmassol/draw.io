@@ -37,6 +37,11 @@
 				<file name="share.uncompressed.js" />
 				<file name="json.uncompressed.js" />
 			</sources>
+			
+			<sources dir="${basedir}/../../war/js/deflate">
+				<file name="rawdeflate.js" />
+				<file name="base64.js" />
+			</sources>
 		</jscomp>
 	</target>
 

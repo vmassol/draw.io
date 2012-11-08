@@ -1,0 +1,32 @@
+{
+  "appName": {
+    "message": "draw.io (Diagramly)"
+  },
+  "appDesc": {
+    "message": "온라인 도표"
+  },
+  "appLongDesc": {
+    "message": "draw.io는 구글의 무료 응용 프로그램입니다。
+
+흐름도
+UML
+ERD
+네트워크 다이어그램
+업무 프로세스 모델
+조직표
+전자 회로
+와이어 프레이밍과 모형
+
+특징:
+
+네이티브 HTML 5 클라이언트와 IE 6-8
+다양한 빌트인 스텐슬
+직각적인 드랙 앤 드롭
+이미지 검색 및 기타 기능 추가
+PNG/JPG/XML/SVG 보내기
+터치 디바이스 지원
+github (https://github.com/jgraph/draw.io.)에 풀 소스 코드
+실시간 콜레보레이션
+블로그 또는 wikis 안에 다이어그램 내장"
+  }
+}

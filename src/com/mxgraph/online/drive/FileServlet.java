@@ -17,6 +17,7 @@ package com.mxgraph.online.drive;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.PrintWriter;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Scanner;
@@ -36,7 +37,6 @@ import com.google.api.client.googleapis.json.GoogleJsonResponseException;
 import com.google.api.client.http.ByteArrayContent;
 import com.google.api.client.http.GenericUrl;
 import com.google.api.client.http.HttpResponse;
-import com.google.api.client.http.HttpResponseException;
 import com.google.api.client.http.HttpTransport;
 import com.google.api.client.http.javanet.NetHttpTransport;
 import com.google.api.client.json.JsonFactory;
@@ -150,7 +150,10 @@ public class FileServlet extends HttpServlet
 				resp.setStatus(500);
 				try
 				{
-					resp.getWriter().write(getAuthorizationUrl(req, false));
+					// This section is explicitly verbose to make exception identification easier
+					String authURL = getAuthorizationUrl(req, false);
+					PrintWriter writer = resp.getWriter();
+					writer.write(authURL);
 				}
 				catch (Exception ex)
 				{

@@ -1,0 +1,30 @@
+{
+  "appName": {
+    "message": "draw.io (Diagramly)"
+  },
+  "appDesc": {
+    "message": "Crtanje dijagrama onlajn"
+  },
+  "appLongDesc": {
+    "message": "draw.io je potpuno besplatna Google Drive(TM) aplikacija, koja omogućava crtanje sledećih vrsta dijagrama:
+
+- dijagram toka
+- UML
+- dijagram relacije odnosa
+- mrežni dijagram
+- BPMN
+- ogranizacioni dijagram
+- električna kola i slično
+- žičani model i skice korisničkog interfejsa
+
+Odlike:
+- HTML 5 klijent sa potpunom podrškom za IE 6-8
+- opširna ugrađena biblioteka matrica
+- intuitivan drag and drop interfejs
+- eksportovanje u: PNG, GIF, JPG, XML, SVG i PDF
+- podrška za dodirne uređaje
+- kompletan izvorni kod je dostupan na github-u: https://github.com/jgraph/draw.io
+- višekorisnička saradnja u realnom vremenu
+- ugrađivanje dijagrama u blogove i wiki-stranice"
+  }
+}

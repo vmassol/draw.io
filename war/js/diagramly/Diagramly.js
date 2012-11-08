@@ -1,5 +1,5 @@
 /*
- * $Id: Diagramly.js,v 1.40 2012-10-24 15:56:33 boris Exp $
+ * $Id: Diagramly.js,v 1.41 2012-11-05 14:47:42 david Exp $
  * Copyright (c) 2006-2010, JGraph Ltd
  */
 // For compatibility with open servlet on GAE
@@ -406,7 +406,7 @@ function setCurrentXml(data, filename)
 		{
 			window.open('http://forum.jgraph.com/');
 		})));
-		this.editorUi.actions.put('github', new Action('Fork me on GitHub', mxUtils.bind(this, function()
+		this.editorUi.actions.put('github', new Action('draw.io @ GitHub', mxUtils.bind(this, function()
 		{
 			window.open('https://github.com/jgraph/draw.io');
 		})));
