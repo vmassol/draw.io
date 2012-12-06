@@ -1,5 +1,5 @@
 /*
- * $Id: Diagramly.js,v 1.41 2012-11-05 14:47:42 david Exp $
+ * $Id: Diagramly.js,v 1.44 2012-12-05 18:27:04 boris Exp $
  * Copyright (c) 2006-2010, JGraph Ltd
  */
 // For compatibility with open servlet on GAE
@@ -304,11 +304,6 @@ function setCurrentXml(data, filename)
 			window.open(this.editorUi.getUrl());
 		})));
 		
-		this.editorUi.actions.put('newGoogleDrive', new Action('Google Drive ' + mxResources.get('drawing', ['']), mxUtils.bind(this, function()
-		{
-			window.open(this.editorUi.getUrl('http://drive.diagram.ly'));
-		})));
-		
 		this.editorUi.actions.addAction('fromTemplate', mxUtils.bind(this, function()
 		{
 			this.editorUi.showDialog(new NewDialog(this.editorUi).container, 680, 540, true, true);
@@ -350,42 +345,7 @@ function setCurrentXml(data, filename)
 		redirectFormatAction('undo', 'undo');
 		redirectFormatAction('redo', 'redo');
 		redirectFormatAction('selectAll', 'selectall');
-
-		if (driveDomain)
-		{
-			this.editorUi.actions.addAction('open', mxUtils.bind(this, function()
-			{
-				if (typeof(google) != 'undefined' && typeof(google.picker) != 'undefined')
-				{
-					var view = new google.picker.View(google.picker.ViewId.DOCS);
-		            view.setMimeTypes('application/mxe');
-
-					new google.picker.PickerBuilder().
-						addView(view).
-			            setAppId(420247213240).
-			            setAuthUser(editorUi.userInfo.id).
-			            enableFeature(google.picker.Feature.NAV_HIDDEN).
-			            enableFeature(google.picker.Feature.MULTISELECT_ENABLED).
-			            setCallback(function(data)
-	    				{
-	    			        if (data.action == google.picker.Action.PICKED)
-	    			        {
-	    			        	for (var i = 0; i < data.docs.length; i++)
-	    			        	{
-	    			        		window.open('http://drive.diagram.ly?fileId=' + data.docs[i].id);
-	    			        	}
-	    			        }
-	    			    }).
-			            build().
-			            setVisible(true);
-				}
-				else
-				{
-					window.open('http://drive.google.com');
-				}
-			}));
-		}
-		
+ 
 		this.editorUi.actions.addAction('export', mxUtils.bind(this, function()
 		{
 			this.editorUi.showDialog(new ExportDialog(this.editorUi).container, 300, 220, true, true);
@@ -542,6 +502,29 @@ function setCurrentXml(data, filename)
 			if (urlParams['test'] == '1')
 			{
 				// For testing local PNG export
+				mxResources.parse('xmlImageExport=XML Image Export (Local)');
+				
+				this.editorUi.actions.addAction('xmlImageExport', mxUtils.bind(this, function()
+				{
+					var bounds = graph.getGraphBounds();
+					
+		        	// New image export
+					var xmlDoc = mxUtils.createXmlDocument();
+					var root = xmlDoc.createElement('output');
+					xmlDoc.appendChild(root);
+					var xmlCanvas = new mxXmlCanvas2D(root);
+					
+					// Render graph
+					var imgExport = new mxImageExport();
+					imgExport.drawState(this.editorUi.editor.graph.getView().getState(this.editorUi.editor.graph.model.root), xmlCanvas);
+					
+					mxLog.show();
+					mxLog.debug(mxUtils.getPrettyXml(root));
+				}));
+					
+				this.addMenuItems(menu, ['-', 'xmlImageExport'], parent);
+				
+				// For testing local PNG export
 				if (typeof(jsCanvas) != 'undefined')
 				{
 					mxResources.parse('pngExport=PNG Export (Local)');
@@ -571,7 +554,7 @@ function setCurrentXml(data, filename)
 						}));
 					}));
 					
-					this.addMenuItems(menu, ['-', 'pngExport'], parent);
+					this.addMenuItems(menu, ['pngExport'], parent);
 				}
 				
 				// For testing local PDF export

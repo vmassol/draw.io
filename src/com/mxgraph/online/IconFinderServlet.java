@@ -1,5 +1,5 @@
 /**
- * $Id: IconFinderServlet.java,v 1.4 2012-07-24 08:23:19 gaudenz Exp $
+ * $Id: IconFinderServlet.java,v 1.5 2012-11-20 17:13:12 boris Exp $
  * Copyright (c) 2011-2012, JGraph Ltd
  */
 package com.mxgraph.online;
@@ -10,8 +10,6 @@ import java.net.URL;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-
-import com.google.api.client.googleapis.auth.oauth2.GoogleClientSecrets;
 
 /**
  * Servlet implementation class OpenServlet
@@ -42,11 +40,6 @@ public class IconFinderServlet extends HttpServlet
 	}
 
 	/**
-	 * Loaded data from war/WEB-INF/client_secrets.json.
-	 */
-	protected GoogleClientSecrets secrets;
-
-	/**
 	 * Loads the key.
 	 */
 	protected void updateKey()
@@ -57,7 +50,7 @@ public class IconFinderServlet extends HttpServlet
 			{
 				API_KEY = Utils.readInputStream(
 						getServletContext().getResourceAsStream(
-								API_KEY_FILE_PATH)).replaceAll("\n", "");
+								getAPIKeyFilePath())).replaceAll("\n", "");
 			}
 			catch (IOException e)
 			{
@@ -91,5 +84,10 @@ public class IconFinderServlet extends HttpServlet
 			System.out.println(e.getMessage());
 			e.printStackTrace();
 		}
+	}
+	
+	protected String getAPIKeyFilePath() 
+	{
+		return API_KEY_FILE_PATH;
 	}
 }

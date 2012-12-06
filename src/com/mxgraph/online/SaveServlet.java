@@ -41,6 +41,10 @@ public class SaveServlet extends HttpServlet
 	protected void doPost(HttpServletRequest request,
 			HttpServletResponse response) throws ServletException, IOException 
 	{
+		handlePost(request, response);
+	}
+	
+	public static void handlePost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException  {
 		if (request.getContentLength() < Constants.MAX_REQUEST_SIZE) 
 		{
 			long t0 = System.currentTimeMillis();
@@ -100,7 +104,8 @@ public class SaveServlet extends HttpServlet
 					// Supports GZIP content encoding
 					// TODO: Check if encoded request param can be passed
 					// through directly
-					if (encoding != null && encoding.indexOf("gzip") >= 0) 
+					// Added a sdch check because upon SVG or PDF export, downloads in Confluence would come down as zipped files
+					if (encoding != null && encoding.indexOf("gzip") >= 0 && encoding.indexOf("sdch") == -1)
 					{
 						response.setHeader("Content-Encoding", "gzip");
 						out = new GZIPOutputStream(out);

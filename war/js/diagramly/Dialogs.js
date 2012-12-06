@@ -1,5 +1,5 @@
 /*
- * $Id: Dialogs.js,v 1.22 2012-10-24 11:31:49 boris Exp $
+ * $Id: Dialogs.js,v 1.25 2012-11-30 17:04:29 boris Exp $
  * Copyright (c) 2006-2010, JGraph Ltd
  */
 /**
@@ -452,7 +452,7 @@ function NewDialog(editorUi)
 			base = base.substring(0, index);
 		}
 		
-		img.setAttribute('src', '/templates/images/' + base + '.png');
+		img.setAttribute('src', TEMPLATE_PATH + '/images/' + base + '.png');
 		
 		var href = editorUi.getUrl(window.location.pathname + '?tmp=' + templates[i]);
 		var link = document.createElement('a');
@@ -1097,3 +1097,63 @@ function ShareDialog(editorUi)
 	table.appendChild(tbody);
 	this.container = table;
 };
+
+function FilePickerDialog(editorUi, docs) 
+{
+	var div = document.createElement('div');
+	div.style.textAlign = 'left';
+	
+	var message = document.createElement('div');
+	mxUtils.write(message, mxResources.get('fileOpenLocation'));
+	
+	div.appendChild(message);
+	div.appendChild(document.createElement('br'))
+	
+	var select = document.createElement('select');
+	select.style.width = '180px';
+
+	var newOption = document.createElement('option');
+	newOption.setAttribute('value', 'new');
+	mxUtils.write(newOption, mxResources.get('openInNewWindow'));
+	select.appendChild(newOption);
+
+	var replaceOption = document.createElement('option');
+	replaceOption.setAttribute('value', 'replace');
+	mxUtils.write(replaceOption, mxResources.get('replaceExistingDrawing'));
+	select.appendChild(replaceOption);
+	
+	div.appendChild(select);
+	
+	div.appendChild(mxUtils.button(mxResources.get('ok'), function()
+	{
+		if (select.value == 'new')
+		{
+			for ( var i = 0; i < docs.length; i++) 
+			{
+				window.open(editorUi.getUrl('/?fileId=' + docs[i].id));
+			}
+		}
+		else if (select.value == 'replace')
+		{
+			//if multiple diagrams are selected, open on in current window and others in new tabs/windows 
+			if(docs.length > 1) 
+			{
+				for ( var i = 1; i < docs.length; i++) 
+				{
+					window.open(editorUi.getUrl('/?fileId=' + docs[i].id));
+				}
+			}
+			
+			window.location.replace(editorUi.getUrl('/?fileId=' + docs[0].id));
+		}
+		
+		editorUi.hideDialog();
+	}));
+	
+	div.appendChild(mxUtils.button(mxResources.get('cancel'), function()
+	{
+		editorUi.hideDialog();
+	}));
+	
+	this.container = div;
+}

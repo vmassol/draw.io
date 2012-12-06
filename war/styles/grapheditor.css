@@ -22,7 +22,7 @@
 }
 .geMenubar, .geToolbar {
 	white-space:nowrap;
-	display:table;
+	display:block;
 	width:100%;
 }
 .geMenubar .geItem, .geToolbar .geButton, .geToolbar .geLabel, .geSidebar, .geSidebarContainer .geTitle, .geSidebar .geItem, .mxPopupMenuItem {

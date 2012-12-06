@@ -25,6 +25,8 @@
 			</sources>
 			
 			<sources dir="${basedir}/../../war/js/diagramly">
+				<file name="GoogleDrive.js" />
+				<file name="Integration.js" />
 				<file name="Dialogs.js" />
 				<file name="Sidebar.js" />
 				<file name="EditorUi.js" />

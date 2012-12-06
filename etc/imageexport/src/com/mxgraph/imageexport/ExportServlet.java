@@ -1,6 +1,7 @@
 package com.mxgraph.imageexport;
 
 import java.awt.Color;
+import java.awt.Font;
 import java.awt.Graphics2D;
 import java.awt.Image;
 import java.awt.image.BufferedImage;
@@ -26,6 +27,9 @@ import org.xml.sax.XMLReader;
 import com.lowagie.text.Document;
 import com.lowagie.text.DocumentException;
 import com.lowagie.text.Rectangle;
+import com.lowagie.text.pdf.BaseFont;
+import com.lowagie.text.pdf.FontMapper;
+import com.lowagie.text.pdf.PdfContentByte;
 import com.lowagie.text.pdf.PdfWriter;
 import com.mxgraph.canvas.mxGraphicsCanvas2D;
 import com.mxgraph.canvas.mxICanvas2D;
@@ -48,14 +52,12 @@ public class ExportServlet extends HttpServlet
 	/**
 	 * 
 	 */
-	private static final Logger logger = Logger.getLogger(ExportServlet.class
-			.getName());
+	private static final Logger logger = Logger.getLogger(ExportServlet.class.getName());
 
 	/**
 	 * 
 	 */
-	private transient SAXParserFactory parserFactory = SAXParserFactory
-			.newInstance();
+	private transient SAXParserFactory parserFactory = SAXParserFactory.newInstance();
 
 	/**
 	 * Cache for all images.
@@ -73,8 +75,7 @@ public class ExportServlet extends HttpServlet
 	/**
 	 * Handles exceptions and the output stream buffer.
 	 */
-	protected void doPost(HttpServletRequest request,
-			HttpServletResponse response) throws ServletException, IOException
+	protected void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException
 	{
 		try
 		{
@@ -84,14 +85,11 @@ public class ExportServlet extends HttpServlet
 
 				handleRequest(request, response);
 
-				long mem = Runtime.getRuntime().totalMemory()
-						- Runtime.getRuntime().freeMemory();
+				long mem = Runtime.getRuntime().totalMemory() - Runtime.getRuntime().freeMemory();
 				long dt = System.currentTimeMillis() - t0;
 
-				logger.info("export: ip=" + request.getRemoteAddr() + " ref=\""
-						+ request.getHeader("Referer") + "\" length="
-						+ request.getContentLength() + " mem=" + mem + " dt="
-						+ dt);
+				logger.info("export: ip=" + request.getRemoteAddr() + " ref=\"" + request.getHeader("Referer") + "\" length="
+						+ request.getContentLength() + " mem=" + mem + " dt=" + dt);
 			}
 			else
 			{
@@ -126,8 +124,7 @@ public class ExportServlet extends HttpServlet
 	 * @throws SAXException 
 	 * @throws DocumentException 
 	 */
-	protected void handleRequest(HttpServletRequest request,
-			HttpServletResponse response) throws Exception
+	protected void handleRequest(HttpServletRequest request, HttpServletResponse response) throws Exception
 	{
 		// Parses parameters
 		String format = request.getParameter("format");
@@ -137,13 +134,10 @@ public class ExportServlet extends HttpServlet
 		String tmp = request.getParameter("bg");
 		String xml = getRequestXml(request);
 
-		Color bg = (tmp != null && !tmp.equals("none")) ? mxUtils
-				.parseColor(tmp) : null;
+		Color bg = (tmp != null && !tmp.equals("none")) ? mxUtils.parseColor(tmp) : null;
 
 		// Checks parameters
-		if (w > 0 && w <= Constants.MAX_WIDTH && h > 0
-				&& h <= Constants.MAX_HEIGHT && format != null && xml != null
-				&& xml.length() > 0)
+		if (w > 0 && w <= Constants.MAX_WIDTH && h > 0 && h <= Constants.MAX_HEIGHT && format != null && xml != null && xml.length() > 0)
 		{
 			// Allows transparent backgrounds only for PNG
 			if (bg == null && !format.equals("png"))
@@ -177,16 +171,14 @@ public class ExportServlet extends HttpServlet
 	/**
 	 * Gets the XML request parameter.
 	 */
-	protected String getRequestXml(HttpServletRequest request)
-			throws IOException, UnsupportedEncodingException
+	protected String getRequestXml(HttpServletRequest request) throws IOException, UnsupportedEncodingException
 	{
 		String enc = request.getParameter("xml");
 		String xml = null;
 
 		if (enc != null && enc.length() > 0)
 		{
-			xml = Utils
-					.inflate(mxBase64.decode(URLDecoder.decode(enc, "UTF-8")));
+			xml = Utils.inflate(mxBase64.decode(URLDecoder.decode(enc, "UTF-8")));
 		}
 		else
 		{
@@ -202,8 +194,7 @@ public class ExportServlet extends HttpServlet
 	 * @throws IOException
 	 * 
 	 */
-	protected void writeImage(String format, String fname, int w, int h,
-			Color bg, String xml, HttpServletResponse response)
+	protected void writeImage(String format, String fname, int w, int h, Color bg, String xml, HttpServletResponse response)
 			throws IOException, SAXException, ParserConfigurationException
 	{
 		BufferedImage image = mxUtils.createBufferedImage(w, h, bg);
@@ -217,8 +208,7 @@ public class ExportServlet extends HttpServlet
 			if (fname != null)
 			{
 				response.setContentType("application/x-unknown");
-				response.setHeader("Content-Disposition",
-						"attachment; filename=\"" + fname + "\"");
+				response.setHeader("Content-Disposition", "attachment; filename=\"" + fname + "\"");
 			}
 			else if (format != null)
 			{
@@ -228,8 +218,7 @@ public class ExportServlet extends HttpServlet
 			// Uses faster PNG encoder
 			if (format.equalsIgnoreCase("png"))
 			{
-				PngEncoder encoder = (bg != null) ? new PngEncoder()
-						: new PngEncoder(PngEncoder.COLOR_TRUECOLOR_ALPHA);
+				PngEncoder encoder = (bg != null) ? new PngEncoder() : new PngEncoder(PngEncoder.COLOR_TRUECOLOR_ALPHA);
 				encoder.encode(image, response.getOutputStream());
 			}
 			else
@@ -246,16 +235,14 @@ public class ExportServlet extends HttpServlet
 	 * @throws ParserConfigurationException 
 	 * @throws SAXException 
 	 */
-	protected void writePdf(String fname, int w, int h, Color bg, String xml,
-			HttpServletResponse response) throws DocumentException,
+	protected void writePdf(String fname, int w, int h, Color bg, String xml, HttpServletResponse response) throws DocumentException,
 			IOException, SAXException, ParserConfigurationException
 	{
 		response.setContentType("application/pdf");
 
 		if (fname != null)
 		{
-			response.setHeader("Content-Disposition", "attachment; filename=\""
-					+ fname + "\"");
+			response.setHeader("Content-Disposition", "attachment; filename=\"" + fname + "\"");
 		}
 
 		// Fixes PDF offset
@@ -263,12 +250,39 @@ public class ExportServlet extends HttpServlet
 		h += 1;
 
 		Document document = new Document(new Rectangle(w, h));
-		PdfWriter writer = PdfWriter.getInstance(document,
-				response.getOutputStream());
+		PdfWriter writer = PdfWriter.getInstance(document, response.getOutputStream());
 		document.open();
 
-		mxGraphicsCanvas2D gc = createCanvas(writer.getDirectContent()
-				.createGraphics(w, h));
+		PdfContentByte pcb = writer.getDirectContent();
+
+		FontMapper fontMapper = new FontMapper()
+		{
+			public BaseFont awtToPdf(Font font)
+			{
+				try
+				{
+					// FIXME written specifically for a modern mac
+					return BaseFont.createFont("/Library/Fonts/Arial Unicode.ttf", BaseFont.IDENTITY_H, BaseFont.EMBEDDED);
+				}
+				catch (DocumentException e)
+				{
+					e.printStackTrace();
+				}
+				catch (IOException e)
+				{
+					e.printStackTrace();
+				}
+				return null;
+			}
+
+			public Font pdfToAwt(BaseFont font, int size)
+			{
+				return null;
+			}
+		};
+
+		Graphics2D g2d = pcb.createGraphics(w, h, fontMapper);
+		mxGraphicsCanvas2D gc = createCanvas(g2d);
 
 		// Fixes PDF offset
 		gc.translate(1, 1);
@@ -276,13 +290,14 @@ public class ExportServlet extends HttpServlet
 		renderXml(xml, gc);
 		gc.getGraphics().dispose();
 		document.close();
+		writer.flush();
+		writer.close();
 	}
 
 	/**
 	 * Renders the XML to the given canvas.
 	 */
-	protected void renderXml(String xml, mxICanvas2D canvas)
-			throws SAXException, ParserConfigurationException, IOException
+	protected void renderXml(String xml, mxICanvas2D canvas) throws SAXException, ParserConfigurationException, IOException
 	{
 		XMLReader reader = parserFactory.newSAXParser().getXMLReader();
 		reader.setContentHandler(new mxSaxOutputHandler(canvas));
@@ -311,8 +326,7 @@ public class ExportServlet extends HttpServlet
 				Hashtable<String, Image> cache = shortCache;
 
 				// Uses global image cache for all server-side images
-				if (src.startsWith("http://img.diagramly.com/")
-						|| src.startsWith("https://img.diagramly.com/"))
+				if (src.startsWith("http://img.diagramly.com/") || src.startsWith("https://img.diagramly.com/"))
 				{
 					cache = imageCache;
 				}
