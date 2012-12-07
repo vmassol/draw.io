@@ -262,7 +262,7 @@
 	</script>
 	<script>
 		//force SSL for all browsers except for IE8 and under
-		if(window.location.protocol.indexOf('https') == -1 && (!mxClient.IS_IE || navigator.userAgent.indexOf('MSIE 9') != -1 || navigator.userAgent.indexOf('MSIE 10') != -1)) 
+		if('https:' != document.location.protocol && (!mxClient.IS_IE || navigator.userAgent.indexOf('MSIE 9') != -1 || navigator.userAgent.indexOf('MSIE 10') != -1)) 
 		{
 			if(window.location.host.indexOf('www.draw.io') != -1 || window.location.host.indexOf('diagram.ly') != -1 || window.location.host.indexOf('diagramly.com') != -1) 
 			{
@@ -273,7 +273,7 @@
 	</script>
 	<!--[if lte IE 8]>
 	<script>
-		if(window.location.protocol.indexOf('https') != -1) 
+		if('https:' == document.location.protocol) 
 		{
 			if(window.location.host.indexOf('www.draw.io') != -1 || window.location.host.indexOf('diagram.ly') != -1 || window.location.host.indexOf('diagramly.com') != -1) 
 			{
@@ -457,8 +457,5 @@ if(navigator.userAgent.indexOf('MSIE 7') == -1 && !mxClient.IS_IE6 && navigator.
 	mxscript('https://apis.google.com/js/client.js?onload=handleApiLoad');
 }
 </script>
-
-	  
-
 </body>
 </html>

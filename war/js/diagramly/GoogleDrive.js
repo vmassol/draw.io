@@ -18,6 +18,7 @@ var mxGoogleDrive =
 	timeoutLength : 7000,
 	tryCount : 0,
 	response : null,
+	cookieRegex : /\s?drive=.*/,
 	authMethod :
 	//stores the auth method and parameters in case it is automatically repeated
 	{
@@ -491,7 +492,7 @@ var mxGoogleDrive =
 		for ( var i = 0; i < cookies.length; i++)
 		{
 			var cookie = cookies[i];
-			if (cookie.indexOf('drive') != -1)
+			if (cookie.match(this.cookieRegex) != null)
 			{
 				return cookie;
 			}

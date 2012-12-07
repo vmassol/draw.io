@@ -438,10 +438,10 @@
 			editorUi.menubar.container.appendChild(this.createIntegrationUi());
 		}
 
-		setInterval(function()
+		/*setInterval(function()
 		{
 			editorUi.checkSession();
-		}, 1000);
+		}, 1000);*/
 	};
 
 	/**
