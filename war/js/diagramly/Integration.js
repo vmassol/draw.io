@@ -36,6 +36,7 @@ var mxIntegration =
 		{
 			mxIntegration.clearCookies();
 			mxIntegration.activeIntegration.disconnect();
+			mxIntegration.activeIntegration.editorUi.checkSession();
 		});
 
 		var clearDiv = document.createElement('div');
