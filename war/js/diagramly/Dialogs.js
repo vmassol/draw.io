@@ -1,5 +1,5 @@
 /*
- * $Id: Dialogs.js,v 1.25 2012-11-30 17:04:29 boris Exp $
+ * $Id: Dialogs.js,v 1.26 2012-12-08 14:54:27 boris Exp $
  * Copyright (c) 2006-2010, JGraph Ltd
  */
 /**
@@ -1126,25 +1126,27 @@ function FilePickerDialog(editorUi, docs)
 	
 	div.appendChild(mxUtils.button(mxResources.get('ok'), function()
 	{
+		var href = location.protocol + '//' + location.host + location.pathname;
+		
 		if (select.value == 'new')
 		{
 			for ( var i = 0; i < docs.length; i++) 
 			{
-				window.open(editorUi.getUrl('/?fileId=' + docs[i].id));
+				window.open(href + editorUi.getUrl('?fileId=' + docs[i].id));
 			}
 		}
 		else if (select.value == 'replace')
 		{
-			//if multiple diagrams are selected, open on in current window and others in new tabs/windows 
+			//if multiple diagrams are selected, open one in current window and others in new tabs/windows 
 			if(docs.length > 1) 
 			{
 				for ( var i = 1; i < docs.length; i++) 
 				{
-					window.open(editorUi.getUrl('/?fileId=' + docs[i].id));
+					window.open(href + editorUi.getUrl('?fileId=' + docs[i].id));
 				}
 			}
 			
-			window.location.replace(editorUi.getUrl('/?fileId=' + docs[0].id));
+			window.location.replace(href + editorUi.getUrl('?fileId=' + docs[0].id));
 		}
 		
 		editorUi.hideDialog();

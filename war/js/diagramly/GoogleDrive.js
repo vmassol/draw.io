@@ -202,7 +202,7 @@ var mxGoogleDrive =
 	createIntegrationButton : function()
 	{
 		var driveImg = document.createElement('img');
-		driveImg.src = '/images/google-drive-20x20.png';
+		driveImg.src = 'images/google-drive-20x20.png';
 		driveImg.style.padding = '0px 5px 0px 10px';
 		driveImg.style.border = 'none';
 		driveImg.style.verticalAlign = 'middle';
@@ -485,6 +485,9 @@ var mxGoogleDrive =
 	disconnect : function()
 	{
 		this.editorUi.actions.put('open', this.openAction);
+		mxIntegration.setLoggedIn(false);
+		mxIntegration.showUserControls(false);
+		this.editorUi.showDialog(new LogoutPopup(this.editorUi).container, 320, 80, true, true);
 	},
 	getCookie : function()
 	{
