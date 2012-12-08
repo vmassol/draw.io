@@ -1,5 +1,5 @@
 /*
- * $Id: Diagramly.js,v 1.44 2012-12-05 18:27:04 boris Exp $
+ * $Id: Diagramly.js,v 1.45 2012-12-08 16:36:10 boris Exp $
  * Copyright (c) 2006-2010, JGraph Ltd
  */
 // For compatibility with open servlet on GAE
@@ -427,7 +427,7 @@ function setCurrentXml(data, filename)
 		            addView(google.picker.ViewId.IMAGE_SEARCH);
 				
 				// Extended picker adds image upload
-				if (driveDomain || urlParams['picker'] == '2')
+				if (urlParams['picker'] == '2')
 				{
 					var view = new google.picker.View(google.picker.ViewId.DOCS);
 				    view.setMimeTypes("image/png,image/jpeg,image/jpg");
@@ -631,12 +631,6 @@ function setCurrentXml(data, filename)
 		this.put('new', new Menu(mxUtils.bind(this, function(menu, parent)
 		{
 			this.addMenuItems(menu, ['new', 'newCopy', '-', 'fromTemplate', 'fromText'], parent);
-
-			if (!driveDomain)
-			{
-				this.addMenuItems(menu, ['-', 'newGoogleDrive'], parent);				
-			}
-			
 		})));
 		// Adds shapes submenu in file menu
 		this.editorUi.actions.addAction('embed', mxUtils.bind(this, function()

@@ -1,5 +1,5 @@
 /*
- * $Id: Dialogs.js,v 1.26 2012-12-08 14:54:27 boris Exp $
+ * $Id: Dialogs.js,v 1.27 2012-12-08 16:36:10 boris Exp $
  * Copyright (c) 2006-2010, JGraph Ltd
  */
 /**
@@ -31,31 +31,6 @@ function SaveDialog(editorUi)
 	
 	tbody.appendChild(row);
 
-	var desc = null;
-
-	if (driveDomain && editorUi.editor.googleFile != null)
-	{
-		row = document.createElement('tr');
-		
-		td = document.createElement('td');
-		td.style.fontSize = '10pt';
-		td.style.width = '100px';
-		mxUtils.write(td, 'Description:');
-		
-		row.appendChild(td);
-		
-		desc = document.createElement('textarea');
-		desc.value = editorUi.editor.googleFile.description || '';
-		desc.style.width = '180px';
-		desc.style.height = '60px';
-
-		td = document.createElement('td');
-		td.appendChild(desc);
-		row.appendChild(td);
-		
-		tbody.appendChild(row);
-	}
-
 	row = document.createElement('tr');
 	td = document.createElement('td');
 	td.colSpan = 2;
@@ -65,23 +40,6 @@ function SaveDialog(editorUi)
 
 	var saveBtn = mxUtils.button(mxResources.get('save'), function()
 	{
-		if (desc != null)
-		{
-			// Resets the file entry to avoid replacing the old file
-			var parents = editorUi.editor.googleFile.parents;
-			
-			editorUi.editor.googleFile =
-			{
-				'title': nameInput.value,
-				'content': '',
-				'mimeType': 'application/mxe',
-				'description': ''
-			};
-			
-			editorUi.editor.googleFile.description = desc.value;
-			editorUi.editor.googleFile.parents = parents;
-		}
-		
     	editorUi.save(nameInput.value);
     	editorUi.hideDialog();
 	});
