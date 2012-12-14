@@ -19,6 +19,7 @@ var mxGoogleDrive =
 	tryCount : 0,
 	response : null,
 	cookieRegex : /\s?drive=.*/,
+	postAuth : null,//callback that is invoked after 401 on save and  re-authorization
 	authMethod :
 	//stores the auth method and parameters in case it is automatically repeated
 	{
@@ -155,7 +156,13 @@ var mxGoogleDrive =
 				clearTimeout(mxGoogleDrive.timeoutId);
 				mxGoogleDrive.tryCount = 0;
 
-				mxGoogleDrive.postIntegration();
+				if(mxGoogleDrive.postAuth != null) 
+				{
+					mxGoogleDrive.postAuth();
+				} else 
+				{
+					mxGoogleDrive.postIntegration();
+				}
 
 			}, function(err)
 			{
@@ -202,7 +209,7 @@ var mxGoogleDrive =
 	createIntegrationButton : function()
 	{
 		var driveImg = document.createElement('img');
-		driveImg.src = '/images/google-drive-20x20.png';
+		driveImg.src = 'images/google-drive-20x20.png';
 		driveImg.style.padding = '0px 5px 0px 10px';
 		driveImg.style.border = 'none';
 		driveImg.style.verticalAlign = 'middle';
@@ -246,6 +253,8 @@ var mxGoogleDrive =
 	},
 	saveOrUpdateFile : function(fileId, parents, fileName, content, tryCount)
 	{
+		var args = arguments;
+		
 		if (typeof tryCount === "undefined")
 		{
 			tryCount = 0;
@@ -302,16 +311,41 @@ var mxGoogleDrive =
 
 		var callback = function(resp)
 		{
+			mxGoogleDrive.editorUi.editor.filename = name;
+			
 			if (resp.error == null && resp)
 			{
 				mxGoogleDrive.fileInfo = resp;
-				mxGoogleDrive.editorUi.editor.filename = name;
 				mxGoogleDrive.editorUi.editor.modified = false;
-				mxIntegration.spinner.stop();
 				mxGoogleDrive.editorUi.editor.setStatus(mxResources.get('saved'));
+			} else if(resp.error.code == 401) 
+			{
+				var dialog = new SessionTimeoutDialog(mxGoogleDrive.editorUi);
+				
+				dialog.buttons.appendChild(mxUtils.button(mxResources.get('ok'), function()
+				{
+					mxGoogleDrive.postAuth = function() 
+					{
+						mxGoogleDrive.saveOrUpdateFile.apply(mxGoogleDrive, args);
+						mxGoogleDrive.postAuth = null;
+					};
+
+					mxIntegration.setLoggedIn(false);
+					mxGoogleDrive.authMethod.method(mxGoogleDrive.authMethod.args);
+					mxGoogleDrive.editorUi.hideDialog();
+				}));
+						
+				dialog.buttons.appendChild(mxUtils.button(mxResources.get('cancel'), function()
+				{
+					mxIntegration.setLoggedIn(false);
+					mxIntegration.showUserControls(false);
+					mxGoogleDrive.editorUi.hideDialog();
+				}));
+				
+				mxGoogleDrive.editorUi.showDialog(dialog.container, 370, 70, true, true);
+				
 			} else
 			{
-				mxIntegration.spinner.stop();
 
 				if (tryCount < mxGoogleDrive.retryLimit)
 				{
@@ -328,7 +362,7 @@ var mxGoogleDrive =
 					mxUtils.alert(mxResources.get('errorSavingFile'));
 				}
 			}
-
+			mxIntegration.spinner.stop();
 			mxGoogleDrive.isOperationInProgress = false;
 		};
 
@@ -374,7 +408,7 @@ var mxGoogleDrive =
 
 				if(mxGoogleDrive.response != null) 
 				{
-					if(mxGoogleDrive.response.code == 404) 
+					if(mxGoogleDrive.response.error.code == 404) 
 					{
 						msg = mxResources.get('fileNotFound'); 
 					}
@@ -397,6 +431,7 @@ var mxGoogleDrive =
 			var doc = mxUtils.parseXml(responseText);
 
 			mxGoogleDrive.editorUi.editor.setGraphXml(doc.documentElement);
+			
 			mxGoogleDrive.editorUi.editor.modified = false;
 			mxGoogleDrive.editorUi.editor.undoManager.clear();
 			mxGoogleDrive.editorUi.editor.filename = mxGoogleDrive.fileInfo.title;
@@ -485,6 +520,9 @@ var mxGoogleDrive =
 	disconnect : function()
 	{
 		this.editorUi.actions.put('open', this.openAction);
+		mxIntegration.setLoggedIn(false);
+		mxIntegration.showUserControls(false);
+		this.editorUi.showDialog(new LogoutPopup(this.editorUi).container, 320, 80, true, true);
 	},
 	getCookie : function()
 	{

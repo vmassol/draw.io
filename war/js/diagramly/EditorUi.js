@@ -81,7 +81,7 @@
 		// Changes default extension for Google Drive
 		this.editor.getOrCreateFilename = function()
 		{
-			return this.filename || mxResources.get('drawing', [ counter ]) + ((driveDomain) ? '' : '.xml');
+			return this.filename || mxResources.get('drawing', [ counter ]);
 		};
 
 		// Removes info text in page
@@ -242,12 +242,6 @@
 			mxCellRenderer.prototype.defaultShapes['folder'].prototype.crisp = false;
 		}
 
-		// Starts the collab
-		if (collab != null && typeof (startCollab) == 'function')
-		{
-			startCollab();
-		}
-
 		// Initial page layout view, scrollBuffer and timer-based scrolling
 		var graph = this.editor.graph;
 		var pageBorder = 800;
@@ -273,7 +267,7 @@
 					var page = new mxRectangle(0, 0, fmt.width * ps, fmt.height * ps);
 
 					var hCount = (this.pageBreaksVisible) ? Math.max(1, Math.ceil(width / (page.width * s))) : 1;
-					var vCount = (this.pageBreaksVisible) ? Math.max(1, Math.ceil(width / (page.height * s))) : 1;
+					var vCount = (this.pageBreaksVisible) ? Math.max(1, Math.ceil(height / (page.height * s))) : 1;
 
 					var gb = this.getGraphBounds();
 
@@ -301,7 +295,7 @@
 					var minWidth = (pb * 2 + pw * hCount);
 					var minHeight = (pb * 2 + ph * vCount);
 					var m = graph.minimumGraphSize;
-
+					
 					if (m == null || m.width != minWidth || m.height != minHeight)
 					{
 						graph.minimumGraphSize = new mxRectangle(0, 0, minWidth, minHeight);
@@ -315,11 +309,10 @@
 						this.autoTranslate = true;
 
 						// NOTE: THIS INVOKES THIS METHOD AGAIN. UNFORTUNATELY
-						// THERE
-						// IS NO WAY AROUND THIS SINCE THE BOUNDS ARE KNOWN
-						// AFTER
-						// THE VALIDATION AND SETTING THE TRANSLATE TRIGGERS A
-						// REVALIDATION. SHOULD MOVE TRANSLATE/SCALE TO VIEW.
+						// THERE IS NO WAY AROUND THIS SINCE THE BOUNDS ARE
+						// KNOWN AFTER THE VALIDATION AND SETTING THE
+						// TRANSLATE TRIGGERS A REVALIDATION. SHOULD
+						// MOVE TRANSLATE/SCALE TO VIEW.
 						var tx = graph.view.translate.x;
 						var ty = graph.view.translate.y;
 
@@ -352,7 +345,7 @@
 			var page = new mxRectangle(0, 0, fmt.width * ps, fmt.height * ps);
 
 			var hCount = (this.pageBreaksVisible) ? Math.max(1, Math.ceil(width / (page.width * s))) : 1;
-			var vCount = (this.pageBreaksVisible) ? Math.max(1, Math.ceil(width / (page.height * s))) : 1;
+			var vCount = (this.pageBreaksVisible) ? Math.max(1, Math.ceil(height / (page.height * s))) : 1;
 
 			var gb = this.getGraphBounds();
 
@@ -374,7 +367,7 @@
 			hCount -= x0;
 			vCount -= y0;
 
-			return new mxRectangle(hCount * page.width + 2, vCount * page.height + 2);
+			return new mxRectangle(0, 0, hCount * page.width + 2, vCount * page.height + 2);
 		};
 
 		// LATER: Zoom to multiple pages using minimumGraphSize
@@ -384,8 +377,9 @@
 			if (graph.scrollbars && !touchStyle)
 			{
 				var scale = this.source.view.scale;
-				return new mxRectangle(0, 0, this.source.container.scrollWidth - pageBorder * 2 * scale, this.source.container.scrollHeight
-						- pageBorder * 2 * scale);
+				
+				return new mxRectangle(0, 0, this.source.container.scrollWidth - pageBorder * 2 * scale,
+					this.source.container.scrollHeight - pageBorder * 2 * scale);
 			}
 
 			return outlineGetSourceContainerSize.apply(this, arguments);
@@ -404,7 +398,7 @@
 				var dx = this.outline.container.clientWidth / scale - pw;
 				var dy = this.outline.container.clientHeight / scale - ph;
 
-				return new mxPoint(-pageBorder + dx / 2, -pageBorder + dy / 2);
+				return new mxPoint(dx / 2 - pageBorder, dy / 2 - pageBorder);
 			}
 
 			return null;
@@ -526,19 +520,6 @@
 			// ignore
 		}
 
-		// Checks if we're in Google Drive mode
-		if (driveDomain)
-		{
-			// Creates a dummy Google File entry
-			this.editor.googleFile =
-			{
-				'title' : 'untitled.html',
-				'content' : '',
-				'mimeType' : 'application/mxe',
-				'description' : ''
-			};
-		}
-
 		if (!openingFile)
 		{
 			// Checks if we should connect to a shared diagram
@@ -590,139 +571,6 @@
 				});
 			}
 
-			// Checks if we're in Google Drive mode
-			else if (driveDomain)
-			{
-				// Checks if a file should be loaded via URL parameters
-				var code = urlParams['code'];
-				var cparam = (code != null) ? '&code=' + code : '';
-
-				if (urlParams['error'] != null)
-				{
-					var err = urlParams['error'];
-					err = mxResources.get(err) || mxResources.get('notConnected');
-					this.editor.setStatus(mxResources.get('error') + ': ' + err);
-				} else
-				{
-					var spinner = createSpinner(this.editor.graph.container);
-					var fileId = urlParams['fileId'];
-					var state = urlParams['state'];
-
-					if (state != null)
-					{
-						try
-						{
-							var tmp = JSON.parse(decodeURIComponent(state));
-
-							if (tmp.ids != null && tmp.ids.length > 0)
-							{
-								fileId = tmp.ids[0];
-							} else if (tmp.parentId != null)
-							{
-								this.editor.googleFile.parents = [
-								{
-									'kind' : 'drive#fileLink',
-									'id' : tmp.parentId
-								} ];
-							}
-						} catch (e)
-						{
-							// Invalid state ignored
-						}
-					} else if (fileId != null)
-					{
-						// Required for passing file ID through auth
-						state = encodeURIComponent(JSON.stringify(
-						{
-							'ids' : [ fileId ],
-							'action' : 'open'
-						}));
-					}
-
-					var sparam = (state != null) ? '&state=' + state : '';
-
-					if (fileId != null)
-					{
-						this.editor.setStatus(mxResources.get('loading') + '...');
-						var href = '/svc?file_id=' + fileId + sparam + cparam;
-
-						if (urlParams['state'] != null)
-						{
-							href += '&state=' + urlParams['state'];
-						}
-
-						mxUtils.get(href, mxUtils.bind(this, function(req)
-						{
-							spinner.stop();
-
-							if (req.getStatus() == 404)
-							{
-								this.editor.setStatus(mxResources.get('fileNotFound'));
-								mxUtils.alert(mxResources.get('fileNotFound'));
-							} else if (req.getStatus() != 200)
-							{
-								window.location.href = req.getText();
-							} else
-							{
-								var text = req.getText();
-
-								if (text != null && text.length > 0)
-								{
-									this.editor.googleFile = JSON.parse(text);
-
-									var doc = mxUtils.parseXml(this.editor.googleFile.content);
-									this.editor.setGraphXml(doc.documentElement);
-
-									// Restores initial diagram state
-									this.editor.modified = false;
-									this.editor.undoManager.clear();
-									this.editor.filename = this.editor.googleFile.title;
-
-									this.editor.setStatus('');
-									this.editor.graph.container.focus();
-
-									this.setUserInfo(this.editor.googleFile.email, this.editor.googleFile.id);
-								} else
-								{
-									this.editor.setStatus(mxResources.get('fileNotLoaded'));
-									mxUtils.alert(mxResources.get('fileNotLoaded'));
-								}
-							}
-						}), function()
-						{
-							spinner.stop();
-							this.editor.setStatus(mxResources.get('errorLoadingFile'));
-							mxUtils.alert(mxResources.get('errorLoadingFile'));
-						});
-					} else
-					{
-						this.editor.setStatus(mxResources.get('connecting') + '...');
-						var href = '/svc?status=1' + cparam + sparam;
-
-						mxUtils.get(href, mxUtils.bind(this, function(req)
-						{
-							spinner.stop();
-							this.editor.setStatus('');
-
-							if (req.getStatus() != 200)
-							{
-								window.location.href = req.getText();
-							} else
-							{
-								var userInfo = JSON.parse(req.getText());
-								this.setUserInfo(userInfo.email, userInfo.id);
-							}
-						}), function()
-						{
-							spinner.stop();
-
-							this.editor.setStatus(mxResources.get('notConnected'));
-							mxUtils.alert(mxResources.get('notConnected'));
-						});
-					}
-				}
-			}
-
 			// Opens the given template
 			var template = urlParams['tmp'];
 
@@ -742,181 +590,6 @@
 			editorUiOpen.apply(this, arguments);
 		}
 	};
-
-	/**
-	 * Saves the current graph under the given filename.
-	 */
-	/*
-	EditorUi.prototype.save = function(name)
-	{
-		if (name != null)
-		{
-			var xml = mxUtils.getXml(this.editor.getGraphXml());
-
-			try
-			{
-				if (this.editor.googleFile != null)
-				{
-					if (!this.blocking)
-					{
-						this.blocking = true;
-						this.editor.googleFile.title = name;
-						this.editor.googleFile.content = xml;
-						var spinner = createSpinner(this.editor.graph.container);
-
-						var jsonObj =
-						{
-							'content' : this.editor.googleFile.content,
-							'title' : this.editor.googleFile.title,
-							'description' : this.editor.googleFile.description,
-							// Replaces all existing mime types with this new
-							// one
-							'mimeType' : 'application/mxe',
-							'resource_id' : this.editor.googleFile.resource_id,
-							'userId' : this.userInfo.id
-						};
-
-						if (this.editor.googleFile.parents != null)
-						{
-							jsonObj.parents = this.editor.googleFile.parents;
-						}
-
-						var json = JSON.stringify(jsonObj);
-
-						this.editor.setStatus(mxResources.get('saving') + '...');
-						var method = (this.editor.googleFile.resource_id != null) ? 'PUT' : 'POST';
-
-						var request = new mxXmlRequest('/svc', json, method);
-						request.setRequestHeaders = function(rq, params)
-						{
-							rq.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded; charset=utf-8');
-						};
-
-						request.send(mxUtils.bind(this, function(req)
-						{
-							// Stores new file id
-							this.editor.googleFile.resource_id = req.getStatus() == 200 ? mxUtils.eval(req.getText()) : this.editor.googleFile.resource_id;
-							this.blocking = false;
-							spinner.stop();
-
-							if (req.getStatus() != 200)
-							{
-								// Handles app not installed error
-								if (req.getStatus() == 403)
-								{
-									this.editor.setStatus(mxResources.get('appNotInstalledStatus'));
-									mxUtils.alert(mxResources.get('appNotInstalledAlert'));
-									wnd = window.open(req.getText());
-								} else
-								{
-									// Do not redirect to avoid loosing data
-									this.editor.setStatus(mxResources.get('fileNotSaved'));
-									mxUtils.alert(mxResources.get('failedToSaveTryReconnect') + '...');
-
-									var wnd = null;
-
-									// Hack to do stuff after new editor loads
-									window.openFile = new OpenFile(mxUtils.bind(this, function()
-									{
-										if (wnd != null)
-										{
-											window.openFile = null;
-											var href = wnd.location.href;
-											wnd.close();
-
-											// Extracting code from URL
-											var index = href.indexOf('?');
-											href = '/svc?status=1&' + href.substring(index + 1);
-
-											mxUtils.get(href, mxUtils.bind(this, function(req)
-											{
-												this.editor.setStatus('');
-
-												if (req.getStatus() == 200)
-												{
-													// Tries to save again
-													this.save(name);
-												} else
-												{
-													this.reconnecting = false;
-													this.editor.setStatus(mxResources.get('notConnected'));
-												}
-											}), function()
-											{
-												this.editor.setStatus(mxResources.get('notConnected'));
-											});
-										}
-									}));
-									window.openFile.setConsumer = function()
-									{
-										this.cancel();
-									};
-
-									if (!this.reconnecting)
-									{
-										this.reconnecting = true;
-										this.editor.setStatus(mxResources.get('reconnecting') + '...');
-										wnd = window.open(req.getText());
-									} else
-									{
-										this.reconnecting = false;
-										this.editor.setStatus(mxResources.get('notConnected'));
-										mxUtils.alert(mxResources.get('notConnected'));
-									}
-								}
-							} else
-							{
-								this.reconnecting = false;
-								this.editor.filename = name;
-								this.editor.modified = false;
-								this.editor.setStatus('');
-								this.userInfo.emailEl.style.display = 'inline';
-								this.userInfo.logoutEl.style.display = 'inline';
-								this.userInfo.loggedOut = false;
-							}
-						}), mxUtils.bind(this, function()
-						{
-							this.blocking = false;
-							spinner.stop();
-							this.editor.setStatus(mxResources.get('errorSavingFile'));
-							mxUtils.alert(mxResources.get('errorSavingFile'));
-						}));
-					}
-				} else if (useLocalStorage)
-				{
-					if (localStorage.getItem(name) != null && !mxUtils.confirm(mxResources.get('replace', [ name ])))
-					{
-						return;
-					}
-
-					localStorage.setItem(name, xml);
-					this.editor.setStatus(mxResources.get('saved'));
-
-					this.editor.filename = name;
-					this.editor.modified = false;
-				} else
-				{
-					if (xml.length < MAX_REQUEST_SIZE)
-					{
-						xml = encodeURIComponent(xml);
-						new mxXmlRequest(SAVE_URL, 'filename=' + name + '&xml=' + xml).simulate(document, "_blank");
-					} else
-					{
-						mxUtils.alert(mxResources.get('drawingTooLarge'));
-						mxUtils.popup(xml);
-
-						return;
-					}
-
-					this.editor.filename = name;
-					this.editor.modified = false;
-				}
-			} catch (e)
-			{
-				this.editor.setStatus(mxResources.get('errorSavingFile'));
-			}
-		}
-	};*/
 
 	EditorUi.prototype.save = function(name)
 	{
@@ -1201,7 +874,7 @@
 				this.save(this.editor.getOrCreateFilename());
 			} else
 			{
-				this.showDialog(new SaveDialog(this).container, 300, (driveDomain) ? 150 : 80, true, true);
+				this.showDialog(new SaveDialog(this).container, 300, 80, true, true);
 			}
 
 			// Extends code for using flash in save button
@@ -1259,7 +932,6 @@
 		var editorUi = this;
 
 		var integrationsContainer = document.createElement('div');
-		//integrationsContainer.style.padding = '4px 12px 5px 10px';
 		integrationsContainer.style.cssFloat = 'right';
 		integrationsContainer.style.styleFloat = 'right';
 
@@ -1275,8 +947,7 @@
 	EditorUi.prototype.setUserInfo = function(email, userId)
 	{
 		var editorUi = this;
-		editorUi.userInfo = editorUi.userInfo ||
-		{};
+		editorUi.userInfo = editorUi.userInfo || {};
 		editorUi.userInfo.id = userId;
 		editorUi.userInfo.email = email;
 		editorUi.userInfo.loggedOut = false;

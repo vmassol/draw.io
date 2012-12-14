@@ -36,7 +36,6 @@ var mxIntegration =
 		{
 			mxIntegration.clearCookies();
 			mxIntegration.activeIntegration.disconnect();
-			mxIntegration.activeIntegration.editorUi.checkSession();
 		});
 
 		var clearDiv = document.createElement('div');
@@ -104,15 +103,11 @@ var mxIntegration =
 	},
 	getIntegrationFromCookie : function()
 	{
-		var cookies = document.cookie.split(";");
-		var id = null;
-		for ( var i = 0; i < cookies.length; i++)
+		var drive = mxGoogleDrive.getCookie();
+		
+		if(drive != null) 
 		{
-			var cookie = cookies[i];
-			if (cookie.indexOf('drive') != -1)
-			{
-				return mxGoogleDrive;
-			}
+			return mxGoogleDrive;
 		}
 
 		return null;

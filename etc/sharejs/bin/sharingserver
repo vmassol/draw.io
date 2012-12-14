@@ -5,6 +5,7 @@
 // 
 // It demonstrates a few techniques to get different application behaviour.
 
+
 var connect = require('connect'),
 	sharejs = require('../lib'),
 	hat = require('hat').rack(32, 36),
@@ -41,7 +42,8 @@ var options = {
   auth: function(client, action) {
 		// This auth handler rejects any ops bound for docs starting with 'readonly'.
     //if (action.name === 'submit op' && action.docName.match(/^readonly/))
-    if (client.headers != null &&
+	// removed referer check due to NPE with SSL referer / ga DEC-2012
+    /*if (client.headers != null && client.headers['referer'] != null &&
     	(client.headers['referer'].indexOf('http://devhost.jgraph.com') != 0 ||
     	client.headers['referer'].indexOf('http://www.diagram.ly') != 0 ||
     	client.headers['referer'].indexOf('http://drive.diagram.ly') != 0 ||
@@ -49,14 +51,14 @@ var options = {
     	client.headers['referer'].indexOf('https://drive.diagram.ly') != 0 ||
     	client.headers['referer'].indexOf('http://www.diagramly.com') != 0 ||
     	client.headers['referer'].indexOf('https://www.diagramly.com') != 0))
-    {
+    {*/
     	action.accept();
-    }
+    /*}
     else
    	{
    		action.reject();
    		console.log('Rejected referer ' + client.header['referer']);
-    }
+    }*/
   }
 };
 

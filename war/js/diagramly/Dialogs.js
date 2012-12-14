@@ -1,5 +1,5 @@
 /*
- * $Id: Dialogs.js,v 1.25 2012-11-30 17:04:29 boris Exp $
+ * $Id: Dialogs.js,v 1.30 2012-12-13 19:53:44 boris Exp $
  * Copyright (c) 2006-2010, JGraph Ltd
  */
 /**
@@ -31,31 +31,6 @@ function SaveDialog(editorUi)
 	
 	tbody.appendChild(row);
 
-	var desc = null;
-
-	if (driveDomain && editorUi.editor.googleFile != null)
-	{
-		row = document.createElement('tr');
-		
-		td = document.createElement('td');
-		td.style.fontSize = '10pt';
-		td.style.width = '100px';
-		mxUtils.write(td, 'Description:');
-		
-		row.appendChild(td);
-		
-		desc = document.createElement('textarea');
-		desc.value = editorUi.editor.googleFile.description || '';
-		desc.style.width = '180px';
-		desc.style.height = '60px';
-
-		td = document.createElement('td');
-		td.appendChild(desc);
-		row.appendChild(td);
-		
-		tbody.appendChild(row);
-	}
-
 	row = document.createElement('tr');
 	td = document.createElement('td');
 	td.colSpan = 2;
@@ -65,23 +40,6 @@ function SaveDialog(editorUi)
 
 	var saveBtn = mxUtils.button(mxResources.get('save'), function()
 	{
-		if (desc != null)
-		{
-			// Resets the file entry to avoid replacing the old file
-			var parents = editorUi.editor.googleFile.parents;
-			
-			editorUi.editor.googleFile =
-			{
-				'title': nameInput.value,
-				'content': '',
-				'mimeType': 'application/mxe',
-				'description': ''
-			};
-			
-			editorUi.editor.googleFile.description = desc.value;
-			editorUi.editor.googleFile.parents = parents;
-		}
-		
     	editorUi.save(nameInput.value);
     	editorUi.hideDialog();
 	});
@@ -225,6 +183,7 @@ function EmbedDialog(editorUi)
 		s = '?s=' + s.substring(0, s.length - 1);
 	}
 
+	// Requires appspot address for support for IE on XP via SSL (our cert doesn't support it)
 	textarea2.value = '<script type="text/javascript" src="//drawdotio.appspot.com/embed.js' + s + '"></script>';
 
 	function update()
@@ -1130,21 +1089,21 @@ function FilePickerDialog(editorUi, docs)
 		{
 			for ( var i = 0; i < docs.length; i++) 
 			{
-				window.open(editorUi.getUrl('/?fileId=' + docs[i].id));
+				window.open(editorUi.getUrl(window.location.pathname + '?fileId=' + docs[i].id));
 			}
 		}
 		else if (select.value == 'replace')
 		{
-			//if multiple diagrams are selected, open on in current window and others in new tabs/windows 
+			//if multiple diagrams are selected, open first one in current window and others in new tabs/windows 
 			if(docs.length > 1) 
 			{
 				for ( var i = 1; i < docs.length; i++) 
 				{
-					window.open(editorUi.getUrl('/?fileId=' + docs[i].id));
+					window.open(editorUi.getUrl(window.location.pathname + '?fileId=' + docs[i].id));
 				}
 			}
 			
-			window.location.replace(editorUi.getUrl('/?fileId=' + docs[0].id));
+			window.location.replace(editorUi.getUrl(window.location.pathname + '?fileId=' + docs[0].id));
 		}
 		
 		editorUi.hideDialog();
@@ -1155,5 +1114,23 @@ function FilePickerDialog(editorUi, docs)
 		editorUi.hideDialog();
 	}));
 	
+	this.container = div;
+}
+
+function SessionTimeoutDialog(editorUi, onOk, onCancel) 
+{
+	var div = document.createElement('div');
+	
+	var message = document.createElement('div');
+	mxUtils.write(message, mxResources.get('sessionTimeoutOnSave'));
+	
+	div.appendChild(message);
+	div.appendChild(document.createElement('br'));
+	
+	var buttons = document.createElement('div');
+	buttons.setAttribute('align', 'center')
+	
+	div.appendChild(buttons);
+	this.buttons = buttons;
 	this.container = div;
 }

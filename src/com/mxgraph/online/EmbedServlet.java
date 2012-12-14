@@ -1,5 +1,5 @@
 /**
- * $Id: EmbedServlet.java,v 1.6 2012-07-30 11:11:25 gaudenz Exp $
+ * $Id: EmbedServlet.java,v 1.8 2012-12-11 20:32:51 david Exp $
  * Copyright (c) 2011-2012, JGraph Ltd
  * 
  * TODO
@@ -36,11 +36,6 @@ import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
-import com.google.appengine.api.datastore.DatastoreService;
-import com.google.appengine.api.datastore.DatastoreServiceFactory;
-import com.google.appengine.api.datastore.Entity;
-import com.google.appengine.api.datastore.EntityNotFoundException;
-import com.google.appengine.api.datastore.KeyFactory;
 import com.google.appengine.api.utils.SystemProperty;
 
 /**
@@ -136,12 +131,10 @@ public class EmbedServlet extends HttpServlet
 
 			if (modSince != null && modSince.equals(lastModified))
 			{
-				incrementCounter(304);
 				response.setStatus(HttpServletResponse.SC_NOT_MODIFIED);
 			}
 			else
 			{
-				incrementCounter(200);
 				writeEmbedResponse(request, response);
 			}
 		}
@@ -226,27 +219,6 @@ public class EmbedServlet extends HttpServlet
 		writer.println("<html>");
 		writer.println("<body>");
 		writer.println("Deployed: " + lastModified);
-		writer.println("<br>");
-
-		DatastoreService datastore = DatastoreServiceFactory
-				.getDatastoreService();
-
-		try
-		{
-			Entity counter = datastore.get(KeyFactory.createKey("EmbedCounter",
-					1));
-
-			writer.println("Responses (Code 200): " + counter.getProperty("ok"));
-			writer.println("<br>");
-			writer.println("Responses (Code 304): "
-					+ counter.getProperty("notModified"));
-		}
-		catch (EntityNotFoundException e)
-		{
-			writer.println("Responses (Code 200): 0");
-			writer.println("<br>");
-			writer.println("Responses (Code 304): 0");
-		}
 		writer.println("</body>");
 		writer.println("</html>");
 		writer.flush();
@@ -263,33 +235,6 @@ public class EmbedServlet extends HttpServlet
 		InputStream is = getServletContext().getResourceAsStream(filename);
 
 		return Utils.readInputStream(is);
-	}
-
-	// Uses persistent datastore for stats
-	public void incrementCounter(int code)
-	{
-		DatastoreService datastore = DatastoreServiceFactory
-				.getDatastoreService();
-		Entity counter = null;
-
-		try
-		{
-			counter = datastore.get(KeyFactory.createKey("EmbedCounter", 1));
-		}
-		catch (EntityNotFoundException e)
-		{
-			counter = new Entity("EmbedCounter", 1);
-
-			counter.setProperty("ok", 0);
-			counter.setProperty("notModified", 0);
-		}
-
-		String propertyName = (code == 200) ? "ok" : "notModified";
-
-		counter.setProperty(propertyName, Integer.parseInt(counter
-				.getProperty(propertyName).toString()) + 1);
-
-		datastore.put(counter);
 	}
 
 }

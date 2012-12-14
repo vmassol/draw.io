@@ -58,14 +58,6 @@
     <url-pattern>/iconfinder</url-pattern>
   </servlet-mapping>
   <servlet>
-    <servlet-name>FileServlet</servlet-name>
-    <servlet-class>com.mxgraph.online.drive.FileServlet</servlet-class>
-  </servlet>
-  <servlet-mapping>
-    <servlet-name>FileServlet</servlet-name>
-    <url-pattern>/svc</url-pattern>
-  </servlet-mapping>
-  <servlet>
     <servlet-name>_ah_sessioncleanup</servlet-name>
     <servlet-class>com.google.apphosting.utils.servlet.SessionCleanupServlet</servlet-class>
   </servlet>

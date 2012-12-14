@@ -25,4 +25,4 @@ the required dependencies or run the install task in build.xml.
 3. Start
 --------
 
-Use "node bin/sharingserver" to start the server or the run task in build.xml.
+Use "node bin/sharingserver &" to start the server or the run task in build.xml.
