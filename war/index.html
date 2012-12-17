@@ -60,6 +60,29 @@
 			background:#b5b5b5;
 		}
 	</style>
+	<script>
+		//force SSL for all browsers except for IE8 and under
+		if('https:' != document.location.protocol && (navigator.userAgent.indexOf('MSIE') == -1 || navigator.userAgent.indexOf('MSIE 9') != -1 || navigator.userAgent.indexOf('MSIE 10') != -1)) 
+		{
+			if(window.location.host.indexOf('www.draw.io') != -1 || window.location.host.indexOf('diagram.ly') != -1 || window.location.host.indexOf('diagramly.com') != -1) 
+			{
+				var url = 'https://www.draw.io' + window.location.search;
+				window.location.replace(url);
+			}
+		}
+	</script>
+	<!--[if lte IE 8]>
+	<script>
+		if('https:' == document.location.protocol) 
+		{
+			if(window.location.host.indexOf('www.draw.io') != -1 || window.location.host.indexOf('diagram.ly') != -1 || window.location.host.indexOf('diagramly.com') != -1) 
+			{
+				var url = 'http://www.draw.io' + window.location.search;   
+				window.location.replace(url);
+			}
+		}
+	</script>
+	<![endif]-->
 	<script type="text/javascript">
 		var t0 = new Date();
 	
@@ -93,7 +116,6 @@
 		// Specifies connection mode for touch devices (at least one should be true)
 		var tapAndHoldStartsConnection = true;
 		var showConnectorImg = true;
-		var collab = null;
 
 		/**
 		 * Parses URL parameters. Supported parameters are (precedence in given order):
@@ -115,6 +137,7 @@
 		 * - url=url: Opens diagram from URL (URL should be encoded)
 		 * - share=ID of shared diagram
 		 * - analytics=0: Disables Google Analytics
+		 * - plugins=url[;url]: List of plugin URLs
 		 * --
 		 * - sharehost=dev||sharing_host_and_port: For developers only
 		 * - export=dev||export_url: For developers only
@@ -172,7 +195,7 @@
 		// the special bundle.
 		var mxLoadResources = false;
 		var mxLanguage = urlParams['lang'];
-		var mxLanguages = ['ar', 'bs', 'cs', 'da', 'de', 'el', 'es', 'es-419', 'fr', 'hu', 'id', 'it', 'ja', 'ko', 'nl', 'no', 'pl', 'pt-br', 'pt', 'ro', 'ru', 'sr', 'sv', 'th', 'tr', 'uk', 'zh'];
+		var mxLanguages = ['ar', 'bs', 'cs', 'da', 'de', 'el', 'es', 'es-ar', 'fr', 'hu', 'id', 'it', 'ja', 'ko', 'nl', 'no', 'pl', 'pt-br', 'pt', 'ro', 'ru', 'sr', 'sv', 'th', 'tr', 'uk', 'zh'];
 		var geBasePath = 'js';
 		var mxBasePath = 'mxgraph';
 		var mxDevUrl = 'http://' + (urlParams['devhost'] || 'devhost.jgraph.com');
@@ -205,12 +228,12 @@
 		// Changes paths for local development environment
 		if (urlParams['dev'] == '1')
 		{
-			mxBasePath = mxDevUrl + '/mxgraph/javascript/src';
+			geBasePath = mxDevUrl + '/' + mxBasePath + '/javascript/examples/grapheditor/www/js';
+			mxBasePath = mxDevUrl + '/' + mxBasePath + '/javascript/src';
 			mxscript(mxBasePath + '/js/mxClient.js');
 
 			// Injects all JS code that depends on mxClient. This indirection via Init.js
 			// is required in some browsers to make sure mxClient.js as been fully loaded.
-			geBasePath = mxDevUrl + '/mxgraph/javascript/examples/grapheditor/www/js';
 			mxscript('/js/diagramly/Devel.js');
 			mxscript('js/sharejs/socket.io.js');
 			mxscript('js/sharejs/share.uncompressed.js');
@@ -257,29 +280,6 @@
 			}
 		};
 	</script>
-	<script>
-		//force SSL for all browsers except for IE8 and under
-		if('https:' != document.location.protocol && (!mxClient.IS_IE || navigator.userAgent.indexOf('MSIE 9') != -1 || navigator.userAgent.indexOf('MSIE 10') != -1)) 
-		{
-			if(window.location.host.indexOf('www.draw.io') != -1 || window.location.host.indexOf('diagram.ly') != -1 || window.location.host.indexOf('diagramly.com') != -1) 
-			{
-				var url = 'https://www.draw.io' + window.location.search;   
-				window.location.replace(url);
-			}
-		}
-	</script>
-	<!--[if lte IE 8]>
-	<script>
-		if('https:' == document.location.protocol) 
-		{
-			if(window.location.host.indexOf('www.draw.io') != -1 || window.location.host.indexOf('diagram.ly') != -1 || window.location.host.indexOf('diagramly.com') != -1) 
-			{
-				var url = 'http://www.draw.io' + window.location.search;   
-				window.location.replace(url);
-			}
-		}
-	</script>
-	<![endif]-->
 </head>
 <body class="geEditor">
 <div id="geInfo">

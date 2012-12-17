@@ -242,12 +242,6 @@
 			mxCellRenderer.prototype.defaultShapes['folder'].prototype.crisp = false;
 		}
 
-		// Starts the collab
-		if (collab != null && typeof (startCollab) == 'function')
-		{
-			startCollab();
-		}
-
 		// Initial page layout view, scrollBuffer and timer-based scrolling
 		var graph = this.editor.graph;
 		var pageBorder = 800;
@@ -273,7 +267,7 @@
 					var page = new mxRectangle(0, 0, fmt.width * ps, fmt.height * ps);
 
 					var hCount = (this.pageBreaksVisible) ? Math.max(1, Math.ceil(width / (page.width * s))) : 1;
-					var vCount = (this.pageBreaksVisible) ? Math.max(1, Math.ceil(width / (page.height * s))) : 1;
+					var vCount = (this.pageBreaksVisible) ? Math.max(1, Math.ceil(height / (page.height * s))) : 1;
 
 					var gb = this.getGraphBounds();
 
@@ -301,7 +295,7 @@
 					var minWidth = (pb * 2 + pw * hCount);
 					var minHeight = (pb * 2 + ph * vCount);
 					var m = graph.minimumGraphSize;
-
+					
 					if (m == null || m.width != minWidth || m.height != minHeight)
 					{
 						graph.minimumGraphSize = new mxRectangle(0, 0, minWidth, minHeight);
@@ -315,11 +309,10 @@
 						this.autoTranslate = true;
 
 						// NOTE: THIS INVOKES THIS METHOD AGAIN. UNFORTUNATELY
-						// THERE
-						// IS NO WAY AROUND THIS SINCE THE BOUNDS ARE KNOWN
-						// AFTER
-						// THE VALIDATION AND SETTING THE TRANSLATE TRIGGERS A
-						// REVALIDATION. SHOULD MOVE TRANSLATE/SCALE TO VIEW.
+						// THERE IS NO WAY AROUND THIS SINCE THE BOUNDS ARE
+						// KNOWN AFTER THE VALIDATION AND SETTING THE
+						// TRANSLATE TRIGGERS A REVALIDATION. SHOULD
+						// MOVE TRANSLATE/SCALE TO VIEW.
 						var tx = graph.view.translate.x;
 						var ty = graph.view.translate.y;
 
@@ -352,7 +345,7 @@
 			var page = new mxRectangle(0, 0, fmt.width * ps, fmt.height * ps);
 
 			var hCount = (this.pageBreaksVisible) ? Math.max(1, Math.ceil(width / (page.width * s))) : 1;
-			var vCount = (this.pageBreaksVisible) ? Math.max(1, Math.ceil(width / (page.height * s))) : 1;
+			var vCount = (this.pageBreaksVisible) ? Math.max(1, Math.ceil(height / (page.height * s))) : 1;
 
 			var gb = this.getGraphBounds();
 
@@ -374,7 +367,7 @@
 			hCount -= x0;
 			vCount -= y0;
 
-			return new mxRectangle(hCount * page.width + 2, vCount * page.height + 2);
+			return new mxRectangle(0, 0, hCount * page.width + 2, vCount * page.height + 2);
 		};
 
 		// LATER: Zoom to multiple pages using minimumGraphSize
@@ -384,8 +377,9 @@
 			if (graph.scrollbars && !touchStyle)
 			{
 				var scale = this.source.view.scale;
-				return new mxRectangle(0, 0, this.source.container.scrollWidth - pageBorder * 2 * scale, this.source.container.scrollHeight
-						- pageBorder * 2 * scale);
+				
+				return new mxRectangle(0, 0, this.source.container.scrollWidth - pageBorder * 2 * scale,
+					this.source.container.scrollHeight - pageBorder * 2 * scale);
 			}
 
 			return outlineGetSourceContainerSize.apply(this, arguments);
@@ -404,7 +398,7 @@
 				var dx = this.outline.container.clientWidth / scale - pw;
 				var dy = this.outline.container.clientHeight / scale - ph;
 
-				return new mxPoint(-pageBorder + dx / 2, -pageBorder + dy / 2);
+				return new mxPoint(dx / 2 - pageBorder, dy / 2 - pageBorder);
 			}
 
 			return null;

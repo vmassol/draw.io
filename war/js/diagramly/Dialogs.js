@@ -1,5 +1,5 @@
 /*
- * $Id: Dialogs.js,v 1.27 2012-12-08 16:36:10 boris Exp $
+ * $Id: Dialogs.js,v 1.30 2012-12-13 19:53:44 boris Exp $
  * Copyright (c) 2006-2010, JGraph Ltd
  */
 /**
@@ -183,6 +183,7 @@ function EmbedDialog(editorUi)
 		s = '?s=' + s.substring(0, s.length - 1);
 	}
 
+	// Requires appspot address for support for IE on XP via SSL (our cert doesn't support it)
 	textarea2.value = '<script type="text/javascript" src="//drawdotio.appspot.com/embed.js' + s + '"></script>';
 
 	function update()
@@ -1084,27 +1085,25 @@ function FilePickerDialog(editorUi, docs)
 	
 	div.appendChild(mxUtils.button(mxResources.get('ok'), function()
 	{
-		var href = location.protocol + '//' + location.host + location.pathname;
-		
 		if (select.value == 'new')
 		{
 			for ( var i = 0; i < docs.length; i++) 
 			{
-				window.open(href + editorUi.getUrl('?fileId=' + docs[i].id));
+				window.open(editorUi.getUrl(window.location.pathname + '?fileId=' + docs[i].id));
 			}
 		}
 		else if (select.value == 'replace')
 		{
-			//if multiple diagrams are selected, open one in current window and others in new tabs/windows 
+			//if multiple diagrams are selected, open first one in current window and others in new tabs/windows 
 			if(docs.length > 1) 
 			{
 				for ( var i = 1; i < docs.length; i++) 
 				{
-					window.open(href + editorUi.getUrl('?fileId=' + docs[i].id));
+					window.open(editorUi.getUrl(window.location.pathname + '?fileId=' + docs[i].id));
 				}
 			}
 			
-			window.location.replace(href + editorUi.getUrl('?fileId=' + docs[0].id));
+			window.location.replace(editorUi.getUrl(window.location.pathname + '?fileId=' + docs[0].id));
 		}
 		
 		editorUi.hideDialog();
@@ -1115,5 +1114,23 @@ function FilePickerDialog(editorUi, docs)
 		editorUi.hideDialog();
 	}));
 	
+	this.container = div;
+}
+
+function SessionTimeoutDialog(editorUi, onOk, onCancel) 
+{
+	var div = document.createElement('div');
+	
+	var message = document.createElement('div');
+	mxUtils.write(message, mxResources.get('sessionTimeoutOnSave'));
+	
+	div.appendChild(message);
+	div.appendChild(document.createElement('br'));
+	
+	var buttons = document.createElement('div');
+	buttons.setAttribute('align', 'center')
+	
+	div.appendChild(buttons);
+	this.buttons = buttons;
 	this.container = div;
 }

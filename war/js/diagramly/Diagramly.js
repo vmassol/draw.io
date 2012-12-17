@@ -1,5 +1,5 @@
 /*
- * $Id: Diagramly.js,v 1.45 2012-12-08 16:36:10 boris Exp $
+ * $Id: Diagramly.js,v 1.47 2012-12-11 17:13:36 david Exp $
  * Copyright (c) 2006-2010, JGraph Ltd
  */
 // For compatibility with open servlet on GAE
