@@ -72,6 +72,11 @@ public class ExportServlet extends HttpServlet
 		super();
 	}
 
+	static
+	{
+		Constants.IMAGE_DOMAIN_MATCHES.add("http://img.diagramly.com/");
+	}
+
 	/**
 	 * Handles exceptions and the output stream buffer.
 	 */
@@ -316,17 +321,32 @@ public class ExportServlet extends HttpServlet
 		{
 			public Image loadImage(String src)
 			{
+				// We can't do SSL connections currently
+				if (src.startsWith("https://") && src.length() > 8)
+				{
+					src = "http://" + src.substring(8, src.length());
+				}
+				
 				// Relative path handling
-				if (!src.startsWith("http://") && !src.startsWith("https://"))
+				if (!src.startsWith("http://"))
 				{
 					src = Constants.IMAGE_DOMAIN + src;
 				}
 
+				// Match old domains used for image hosting
+				for (String domain : Constants.IMAGE_DOMAIN_MATCHES)
+				{
+					if (src.startsWith(domain) && src.length() > domain.length())
+					{
+						src = Constants.IMAGE_DOMAIN + src.substring(domain.length(), src.length());
+					}
+				}
+				
 				// Uses local image cache by default
 				Hashtable<String, Image> cache = shortCache;
 
 				// Uses global image cache for all server-side images
-				if (src.startsWith("http://img.diagramly.com/") || src.startsWith("https://img.diagramly.com/"))
+				if (src.startsWith(Constants.IMAGE_DOMAIN))
 				{
 					cache = imageCache;
 				}

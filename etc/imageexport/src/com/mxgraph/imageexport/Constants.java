@@ -1,6 +1,7 @@
 package com.mxgraph.imageexport;
 
 import java.awt.image.BufferedImage;
+import java.util.ArrayList;
 
 public class Constants
 {
@@ -42,6 +43,10 @@ public class Constants
 	/**
 	 * Default image domain for relative images.
 	 */
-	public static final String IMAGE_DOMAIN = "http://img.diagramly.com/";
+	public static final String IMAGE_DOMAIN = "http://www.draw.io/";
 
+	/**
+	 * Image domains that map to our clipart
+	 */
+	public static final ArrayList<String> IMAGE_DOMAIN_MATCHES = new ArrayList<String>();
 }
