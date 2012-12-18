@@ -1,3 +1,8 @@
+18-DEC-2012: 2.0.1.3
+
+- Uses mxGraph 1.10.4.1
+- Fixes handling of url URL parameter
+
 14-DEC-2012: 2.0.1.2
 
 - Removes plugins feature

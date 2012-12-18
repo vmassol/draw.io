@@ -1,5 +1,5 @@
 /**
- * $Id: EmbedServlet.java,v 1.8 2012-12-11 20:32:51 david Exp $
+ * $Id: EmbedServlet.java,v 1.9 2012-12-18 13:49:26 gaudenz Exp $
  * Copyright (c) 2011-2012, JGraph Ltd
  * 
  * TODO
@@ -148,8 +148,10 @@ public class EmbedServlet extends HttpServlet
 		response.setHeader("Last-Modified", lastModified);
 
 		OutputStream out = response.getOutputStream();
+		
+		// FIXME: Accept-encoding header is missing
 		String encoding = request.getHeader("Accept-Encoding");
-
+		
 		// Supports GZIP content encoding
 		if (encoding != null && encoding.indexOf("gzip") >= 0)
 		{

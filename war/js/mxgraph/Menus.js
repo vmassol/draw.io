@@ -1,5 +1,5 @@
 /**
- * $Id: Menus.js,v 1.57 2012-12-11 15:15:29 gaudenz Exp $
+ * $Id: Menus.js,v 1.58 2012-12-17 14:10:07 gaudenz Exp $
  * Copyright (c) 2006-2012, JGraph Ltd
  */
 /**
@@ -314,7 +314,7 @@ Menus.prototype.init = function()
 	})));
 	this.put('file', new Menu(mxUtils.bind(this, function(menu, parent)
 	{
-		this.addMenuItems(menu, ['new', 'open', '-', 'save', 'saveAs', '-', 'print', 'pageSetup', '-', 'import', 'export', '-', 'editFile'], parent);
+		this.addMenuItems(menu, ['new', 'open', '-', 'save', 'saveAs', '-', 'import', 'export', '-', 'editFile', 'pageSetup', '-', 'print'], parent);
 	})));
 	this.put('edit', new Menu(mxUtils.bind(this, function(menu, parent)
 	{

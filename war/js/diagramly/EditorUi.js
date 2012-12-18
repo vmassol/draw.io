@@ -468,42 +468,6 @@
 		return href;
 	};
 
-	// Spinner only loaded for Google Drive operations in Init
-	function createSpinner(container)
-	{
-		var opts =
-		{
-			lines : 12, // The number of lines to draw
-			length : 12, // The length of each line
-			width : 5, // The line thickness
-			radius : 10, // The radius of the inner circle
-			rotate : 0, // The rotation offset
-			color : '#000', // #rgb or #rrggbb
-			speed : 1, // Rounds per second
-			trail : 60, // Afterglow percentage
-			shadow : false, // Whether to render a shadow
-			hwaccel : false, // Whether to use hardware acceleration
-			className : 'spinner', // The CSS class to assign to the spinner
-			zIndex : 2e9, // The z-index (defaults to 2000000000)
-			left : container.scrollLeft + container.clientWidth / 2 - 12, // Left
-			// position
-			// relative
-			// to
-			// parent
-			// in
-			// px
-			top : container.scrollTop + container.clientHeight / 2 - 12 // Top
-		// position
-		// relative
-		// to
-		// parent
-		// in px
-		};
-
-		return new Spinner(opts).spin(container);
-	}
-	;
-
 	// Loads the specified template
 	var editorUiOpen = EditorUi.prototype.open;
 	EditorUi.prototype.open = function()
@@ -529,19 +493,20 @@
 			if (documentName != null)
 			{
 				this.connect(documentName);
-			} else if (urlParam != null)
+			}
+			else if (urlParam != null)
 			{
 				// Loads diagram from the given URL
-				var spinner = createSpinner(this.editor.graph.container);
 				this.editor.setStatus(mxResources.get('loading') + '...');
+				
 				mxUtils.get('proxy?url=' + urlParam, mxUtils.bind(this, function(req)
 				{
-					spinner.stop();
 					if (req.getStatus() != 200)
 					{
 						this.editor.setStatus(mxResources.get('fileNotLoaded'));
 						mxUtils.alert(mxResources.get('fileNotLoaded'));
-					} else
+					}
+					else
 					{
 						var text = req.getText();
 
@@ -557,7 +522,8 @@
 
 							this.editor.setStatus('');
 							this.editor.graph.container.focus();
-						} else
+						}
+						else
 						{
 							this.editor.setStatus(mxResources.get('fileNotLoaded'));
 							mxUtils.alert(mxResources.get('fileNotLoaded'));
@@ -565,7 +531,6 @@
 					}
 				}), function()
 				{
-					spinner.stop();
 					this.editor.setStatus(mxResources.get('errorLoadingFile'));
 					mxUtils.alert(mxResources.get('errorLoadingFile'));
 				});
@@ -618,7 +583,8 @@
 			}
 
 			mxGoogleDrive.saveOrUpdateFile(mxGoogleDrive.fileInfo.id, mxGoogleDrive.fileInfo.parents, name, xml);
-		} else if (useLocalStorage)
+		}
+		else if (useLocalStorage)
 		{
 			if (localStorage.getItem(name) != null && !mxUtils.confirm(mxResources.get('replace', [ name ])))
 			{
@@ -630,13 +596,15 @@
 
 			this.editor.filename = name;
 			this.editor.modified = false;
-		} else
+		}
+		else
 		{
 			if (xml.length < MAX_REQUEST_SIZE)
 			{
 				xml = encodeURIComponent(xml);
 				new mxXmlRequest(SAVE_URL, 'filename=' + name + '&xml=' + xml).simulate(document, "_blank");
-			} else
+			}
+			else
 			{
 				mxUtils.alert(mxResources.get('drawingTooLarge'));
 				mxUtils.popup(xml);
@@ -658,72 +626,56 @@
 
 			try
 			{
-				sharejs
-						.open(
-								name,
-								'json',
-								SHARE_HOST + '/sjs',
-								mxUtils
-										.bind(
-												this,
-												function(error, doc, connection)
-												{
-													if (doc == null)
-													{
-														mxUtils.alert(error);
-													} else
-													{
-														this.sharing = new Sharing(this.editor.graph.getModel(), doc);
-														this.editor.undoManager.clear();
-														var url = this.getSharingUrl();
+				sharejs.open(name, 'json', SHARE_HOST + '/sjs', mxUtils.bind(this, function(error, doc, connection)
+				{
+					if (doc == null)
+					{
+						mxUtils.alert(error);
+					} else
+					{
+						this.sharing = new Sharing(this.editor.graph.getModel(), doc);
+						this.editor.undoManager.clear();
+						var url = this.getSharingUrl();
 
-														// Together with the
-														// overridden hook
-														// below, this allows
-														// selection inside the
-														// input that shows
-														// the share URL. It
-														// also allows context
-														// menu for copy paste,
-														// deselects when the
-														// focus is lost
-														// and selects all if
-														// the mouse is clicked
-														// inside the input
-														// element.
-														var select = 'var text=document.getElementById(\'shareUrl\');text.style.backgroundColor=\'\';text.focus();text.select();if(window.event!=null){window.event.cancelBubble=true;}return false;';
-														var handlers = 'onmousedown="' + select + '" onclick="' + select + '"';
+						// Together with the overridden hook below, this allows
+						// selection inside the input that shows the share URL. It
+						// also allows context menu for copy paste, deselects when the
+						// focus is lost and selects all if the mouse is clicked
+						// inside the input element.
+						var select = 'var text=document.getElementById(\'shareUrl\');text.style.backgroundColor=\'\';text.focus();text.select();if(window.event!=null){window.event.cancelBubble=true;}return false;';
+						var handlers = 'onmousedown="' + select + '" onclick="' + select + '"';
 
-														if (mxClient.IS_IE && mxClient.IS_SVG)
-														{
-															handlers += ' onblur="document.selection.empty();"';
-														} else if (mxClient.IS_IE)
-														{
-															handlers += ' onmouseup="' + select + '"';
-														}
+						if (mxClient.IS_IE && mxClient.IS_SVG)
+						{
+							handlers += ' onblur="document.selection.empty();"';
+						} else if (mxClient.IS_IE)
+						{
+							handlers += ' onmouseup="' + select + '"';
+						}
 
-														var style = 'color:gray;border:0px;margin:0px;';
+						var style = 'color:gray;border:0px;margin:0px;';
 
-														if (highlight)
-														{
-															style += 'background-color:yellow;';
-														}
+						if (highlight)
+						{
+							style += 'background-color:yellow;';
+						}
 
-														var url = this.getSharingUrl();
-														var footer = document.getElementById('geFooter');
+						var url = this.getSharingUrl();
+						var footer = document.getElementById('geFooter');
 
-														this.editor.setStatus('<input id="shareUrl" style="' + style
-																+ '" type="text" size="50" ' + 'value="' + url + '" readonly ' + handlers
-																+ ' title="' + mxResources.get('shareLink') + '"/>');
+						this.editor.setStatus('<input id="shareUrl" style="' + style
+								+ '" type="text" size="50" ' + 'value="' + url + '" readonly ' + handlers
+								+ ' title="' + mxResources.get('shareLink') + '"/>');
 
-														connection.on('disconnect', mxUtils.bind(this, function()
-														{
-															this.disconnect();
-															this.editor.setStatus(mxResources.get('notConnected'));
-														}));
-													}
-												}));
-			} catch (err)
+						connection.on('disconnect', mxUtils.bind(this, function()
+						{
+							this.disconnect();
+							this.editor.setStatus(mxResources.get('notConnected'));
+						}));
+					}
+				}));
+			}
+			catch (err)
 			{
 				mxUtils.alert(err);
 			}

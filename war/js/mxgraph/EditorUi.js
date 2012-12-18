@@ -1,5 +1,5 @@
 /**
- * $Id: EditorUi.js,v 1.56 2012-12-12 09:06:19 gaudenz Exp $
+ * $Id: EditorUi.js,v 1.57 2012-12-17 15:58:46 gaudenz Exp $
  * Copyright (c) 2006-2012, JGraph Ltd
  */
 /**
@@ -324,7 +324,7 @@ EditorUi.prototype.save = function(name)
 EditorUi.prototype.getUrl = function(pathname)
 {
 	var href = (pathname != null) ? pathname : window.location.pathname;
-	var parms = (pathname.indexOf('?') > 0) ? 1 : 0;
+	var parms = (href.indexOf('?') > 0) ? 1 : 0;
 	
 	// Removes template URL parameter for new blank diagram
 	for (var key in urlParams)
