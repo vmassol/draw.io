@@ -29,7 +29,7 @@ purposes.
 
 We separate between developing against the mxGraph API and just deploying draw.io for general usage. Thus, we make exceptions to the CCNC license 
 if you want to take draw.io as-is and deploy it for your own use (note this only affects commercial users). Below, we will build up a list of alterations 
-you can make to draw.io without being subject to the mxGraph commerical license (note this only affects commercial users):
+you can make to draw.io without being subject to the mxGraph commercial license (note this only affects commercial users):
 
 - You can alter draw.io paths so that the functionality works correctly in your deployment environment
 - You can add and remove menu options and library stencil sets to/from the UI
