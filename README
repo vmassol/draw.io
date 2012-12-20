@@ -16,3 +16,22 @@ of the war is "Imageexport" so "/Imageexport/export" is the value if you deploy 
 /etc/imagexport/build.xml is the ant build file for the image export war. Invoking "war" will generate /etc/imageexport/imageexport.war.
 
 Depoly these wars on a servlet engine and navigate to the location of the first war, you will get the draw.io application.
+
+Licensing
+---------
+
+The underlying mxGraph library is licensed to you either the http://creativecommons.org/licenses/by-nc-sa/3.0/ or the mxGraph commercial license 
+(if you're a paying customer). Please understand that we make a living selling the mxGraph library commercially, we need to avoid draw.io being 
+used freely where mxGraph would previously have been sold.
+
+The source to draw.io itself is Apache 2.0 licensed (or mxGraph Commercial License), but obviously the mxGraph license dominates this for commercial 
+purposes.
+
+We separate between developing against the mxGraph API and just deploying draw.io for general usage. Thus, we make exceptions to the CCNC license 
+if you want to take draw.io as-is and deploy it for your own use (note this only affects commercial users). Below, we will build up a list of alterations 
+you can make to draw.io without being subject to the mxGraph commerical license (note this only affects commercial users):
+
+- You can alter draw.io paths so that the functionality works correctly in your deployment environment
+- You can add and remove menu options and library stencil sets to/from the UI
+
+If you require more exceptions, please add to issue tracker.
