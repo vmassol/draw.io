@@ -1,5 +1,5 @@
 /*
- * $Id: Dialogs.js,v 1.30 2012-12-13 19:53:44 boris Exp $
+ * $Id: Dialogs.js,v 1.31 2013-01-09 13:48:12 gaudenz Exp $
  * Copyright (c) 2006-2010, JGraph Ltd
  */
 /**
@@ -478,7 +478,7 @@ function AboutDialog(editorUi)
 	mxUtils.br(div);
 	mxUtils.br(div);
 	var small = document.createElement('small');
-	small.innerHTML = '&copy; 2012 JGraph Ltd.<br>All Rights Reserved.';
+	small.innerHTML = '&copy; 2013 JGraph Ltd.<br>All Rights Reserved.';
 	div.appendChild(small);
 	
 	mxEvent.addListener(div, 'click', function(e)

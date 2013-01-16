@@ -1,5 +1,5 @@
 /*
- * $Id: Diagramly.js,v 1.47 2012-12-11 17:13:36 david Exp $
+ * $Id: Diagramly.js,v 1.48 2013-01-11 10:58:57 gaudenz Exp $
  * Copyright (c) 2006-2010, JGraph Ltd
  */
 // For compatibility with open servlet on GAE
@@ -427,7 +427,7 @@ function setCurrentXml(data, filename)
 		            addView(google.picker.ViewId.IMAGE_SEARCH);
 				
 				// Extended picker adds image upload
-				if (urlParams['picker'] == '2')
+				if (!mxIntegration.loggedOut || urlParams['picker'] == '2')
 				{
 					var view = new google.picker.View(google.picker.ViewId.DOCS);
 				    view.setMimeTypes("image/png,image/jpeg,image/jpg");

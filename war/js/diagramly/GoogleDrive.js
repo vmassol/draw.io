@@ -18,6 +18,7 @@ var mxGoogleDrive =
 	timeoutLength : 7000,
 	tryCount : 0,
 	response : null,
+	cookieName : 'drive',
 	cookieRegex : /\s?drive=.*/,
 	postAuth : null,//callback that is invoked after 401 on save and  re-authorization
 	authMethod :
@@ -150,7 +151,7 @@ var mxGoogleDrive =
 
 				mxIntegration.setUserId(userInfo.id);
 				mxIntegration.loggedOut = false;
-				mxIntegration.setCookie('drive', Base64.encode(userInfo.id), 365);// cookie expires after 365 days
+				mxIntegration.setCookie(mxGoogleDrive.cookieName, Base64.encode(mxIntegration.userId), 365);// cookie expires after 365 days
 				mxIntegration.setIntegrationProgress(100);
 				mxIntegration.setLoggedIn(true);
 				clearTimeout(mxGoogleDrive.timeoutId);
@@ -311,8 +312,6 @@ var mxGoogleDrive =
 
 		var callback = function(resp)
 		{
-			mxGoogleDrive.editorUi.editor.filename = name;
-			
 			if (resp.error == null && resp)
 			{
 				mxGoogleDrive.fileInfo = resp;

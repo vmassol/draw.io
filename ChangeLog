@@ -1,3 +1,25 @@
+16-JAN-2013: 2.0.1.7
+
+- Uses mxGraph 1.10.4.2
+- Adds curved format menu item
+- Uses extended image picker if logged into Google
+- Removes devhost URL parameter
+
+20-DEC-2012: 2.0.1.6
+
+- Fixes issue with Google Drive files retaining file name
+
+19-DEC-2012: 2.0.1.5
+
+- Enabled .vdx open/importing (alpha)
+
+19-DEC-2012: 2.0.1.4
+
+- Shows spinner while loading url URL parameter
+- Fixes alignment of SVG sidebar entries in IE
+- Fixes flickering of sidebar entries in FF
+- Adds spinner to minified diagramly
+
 18-DEC-2012: 2.0.1.3
 
 - Uses mxGraph 1.10.4.1

@@ -137,12 +137,9 @@
 		 * - url=url: Opens diagram from URL (URL should be encoded)
 		 * - share=ID of shared diagram
 		 * - analytics=0: Disables Google Analytics
-		 * - plugins=url[;url]: List of plugin URLs
 		 * --
-		 * - sharehost=dev||sharing_host_and_port: For developers only
-		 * - export=dev||export_url: For developers only
-		 * - sharehost=hostname: For developers only
-		 * - devhost=hostname: For developers only
+		 * - sharehost=URL for sharing: For developers only
+		 * - export=URL for export: For developers only
 		 * - test=1: For developers only
 		 * - dev=1: For developers only
 		 */
@@ -174,7 +171,7 @@
 		 */
 		function mxscript(src)
 		{
-			document.write('<script src="'+src+'"></scri' + 'pt>');
+			document.write('<script src="'+src+'"></scr' + 'ipt>');
 		};
 
 		/**
@@ -198,53 +195,52 @@
 		var mxLanguages = ['ar', 'bs', 'cs', 'da', 'de', 'el', 'es', 'es-ar', 'fr', 'hu', 'id', 'it', 'ja', 'ko', 'nl', 'no', 'pl', 'pt-br', 'pt', 'ro', 'ru', 'sr', 'sv', 'th', 'tr', 'uk', 'zh'];
 		var geBasePath = 'js';
 		var mxBasePath = 'mxgraph';
-		var mxDevUrl = 'http://' + (urlParams['devhost'] || 'devhost.jgraph.com');
+		
+		// Used to request grapheditor/mxgraph sources in dev mode
+		var mxDevUrl = 'http://devhost.jgraph.com/mxgraph';
 
 		// Customizes sharing host
 		var share = urlParams['sharehost'];
 		
-		if (share == 'dev')
+		if (share != null)
 		{
-			SHARE_HOST = mxDevUrl + ':8000';
-		}
-		else if (share != null)
-		{
-			SHARE_HOST = 'http://' + share;
+			SHARE_HOST = share;
 		}
 
-		// Customizes servlet for export
+		// Customizes export URL
 		var ex = urlParams['export'];
 		
-		if (ex == 'dev')
+		if (ex != null)
 		{
-			// TODO: Fix for new build env
-			EXPORT_URL = mxDevUrl + ':8080/mxgraph_com/export2';
-		}
-		else if (ex != null)
-		{
-			EXPORT_URL = 'http://' + ex;
+			EXPORT_URL = ex;
 		}
 
 		// Changes paths for local development environment
 		if (urlParams['dev'] == '1')
 		{
-			geBasePath = mxDevUrl + '/' + mxBasePath + '/javascript/examples/grapheditor/www/js';
-			mxBasePath = mxDevUrl + '/' + mxBasePath + '/javascript/src';
+			geBasePath = mxDevUrl + '/javascript/examples/grapheditor/www/js';
+			mxBasePath = mxDevUrl + '/javascript/src';
 			mxscript(mxBasePath + '/js/mxClient.js');
 
-			// Injects all JS code that depends on mxClient. This indirection via Init.js
-			// is required in some browsers to make sure mxClient.js as been fully loaded.
-			mxscript('/js/diagramly/Devel.js');
+			// Adds external dependencies
+			mxscript('js/spin/spin.min.js');
 			mxscript('js/sharejs/socket.io.js');
 			mxscript('js/sharejs/share.uncompressed.js');
 			mxscript('js/sharejs/json.uncompressed.js');
+			mxscript('js/deflate/rawdeflate.js');
+			mxscript('js/deflate/base64.js');
+			
+			// Adds all JS code that depends on mxClient. This indirection via Devel.js is
+			// required in some browsers to make sure mxClient.js (and the files that it
+			// loads asynchronously) are available when the code loaded in Devel.js runs.
+			mxscript('js/diagramly/Devel.js');
 		}
 		else
 		{
-			document.write('<script src="js/diagramly.min.js"></' + 'script>');
+			mxscript('js/diagramly.min.js');
 		}
 
-		// For developers only
+		// Testing shapes
 		if (urlParams['test'] == '1')
 		{
 			mxscript('shapes/bpmn/mxBpmnShape.js');
@@ -262,7 +258,7 @@
 			mxscript('shapes/mockup/Text.js');
 			mxscript('shapes/mockup/MockupFinal.js');
 		}
-	
+
 		// Loads JSON for older browsers
 		if (typeof(JSON) == 'undefined')
 		{
@@ -349,7 +345,6 @@ new EditorUi(new Editor());
 </script>
 <!-- tinyMCE - LATER: Do not load if touchStyle is true. -->
 <script src="js/tiny_mce/tiny_mce.js"></script>
-<script src="js/spin/spin.min.js"></script>
 
 <script type="text/javascript">
 if (typeof(tinyMCE) != 'undefined')
@@ -418,24 +413,18 @@ if (urlParams['picker'] != '0' && !mxClient.IS_IE6)
 	mxscript(document.location.protocol + '//www.google.com/jsapi?autoload=%7B%22modules%22%3A%5B%7B%22name%22%3A%22picker%22%2C%22version%22%3A%221%22%2C%22language%22%3A%22' + mxClient.language + '%22%7D%5D%7D');
 }
 
-// Color dialog - do not add to diagramly.min.js due to path issues
+// Color dialog - Do not add to diagramly.min.js due to path issues!
 mxscript('js/jscolor/jscolor.js');
 
-// Used for embed dialog
-if (urlParams['dev'] == '1')
-{
-	mxscript('js/deflate/rawdeflate.js');
-	mxscript('js/deflate/base64.js');
-}
-
 // For developers only
-if (urlParams['test'] == '1')
+if (urlParams['test'] == '1' || urlParams['dev'] == '1')
 {
-	// LATER: jsPDF requires BinaryToArray VBScript function in IE
-	mxscript(mxDevUrl + '/mxgraph/etc/html/export/jspdf.js');
-	mxscript(mxDevUrl + '/mxgraph/etc/html/export/jscanvas.js');
 	mxLog.show();
 	mxLog.debug('Started in ' + (new Date().getTime() - t0.getTime()) + 'ms');
+	mxLog.debug('Share:', SHARE_HOST);
+	mxLog.debug('Export:', EXPORT_URL);
+	mxLog.debug('Development mode:', (urlParams['dev'] == '1') ? 'active' : 'inactive');
+	mxLog.debug('Test mode:', (urlParams['test'] == '1') ? 'active' : 'inactive');
 }
 
 //do not integrate with Google Drive for IE8 and below

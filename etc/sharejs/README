@@ -25,4 +25,5 @@ the required dependencies or run the install task in build.xml.
 3. Start
 --------
 
-Use "node bin/sharingserver &" to start the server or the run task in build.xml.
+On shr.diagramly.com, "cd /usr/lib/node_modules/mxshare" and use "node
+bin/sharingserver &" to start the server, or the run task in build.xml.

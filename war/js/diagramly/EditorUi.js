@@ -497,10 +497,13 @@
 			else if (urlParam != null)
 			{
 				// Loads diagram from the given URL
+				var spinner = mxIntegration.createSpinner(this.editor.graph.container);
 				this.editor.setStatus(mxResources.get('loading') + '...');
 				
 				mxUtils.get('proxy?url=' + urlParam, mxUtils.bind(this, function(req)
 				{
+					spinner.stop();
+
 					if (req.getStatus() != 200)
 					{
 						this.editor.setStatus(mxResources.get('fileNotLoaded'));
@@ -531,6 +534,7 @@
 					}
 				}), function()
 				{
+					spinner.stop();
 					this.editor.setStatus(mxResources.get('errorLoadingFile'));
 					mxUtils.alert(mxResources.get('errorLoadingFile'));
 				});
@@ -581,8 +585,8 @@
 					} ];
 				}
 			}
-
 			mxGoogleDrive.saveOrUpdateFile(mxGoogleDrive.fileInfo.id, mxGoogleDrive.fileInfo.parents, name, xml);
+			this.editor.filename = name;
 		}
 		else if (useLocalStorage)
 		{
@@ -876,70 +880,6 @@
 				}
 			}
 		};
-	}
-
-	//adds the integration UI elements such as 'Integrate with <service-name>' and username and log out link
-	EditorUi.prototype.createIntegrationUi = function()
-	{
-		var editorUi = this;
-
-		var integrationsContainer = document.createElement('div');
-		integrationsContainer.style.cssFloat = 'right';
-		integrationsContainer.style.styleFloat = 'right';
-
-		var intWithDriveBtn = mxGoogleDrive.createIntegrationButton();
-		mxGoogleDrive.editorUi = this;//TODO maybe find a better place for this reference assignment? 
-
-		integrationsContainer.appendChild(intWithDriveBtn);
-		integrationsContainer.appendChild(mxIntegration.createUi());
-
-		return integrationsContainer;
-	}
-
-	EditorUi.prototype.setUserInfo = function(email, userId)
-	{
-		var editorUi = this;
-		editorUi.userInfo = editorUi.userInfo || {};
-		editorUi.userInfo.id = userId;
-		editorUi.userInfo.email = email;
-		editorUi.userInfo.loggedOut = false;
-
-		editorUi.userInfo.emailEl.style.display = 'inline';
-		editorUi.userInfo.logoutEl.style.display = 'inline';
-		editorUi.userInfo.emailEl.innerHTML = email;
-	};
-
-	EditorUi.prototype.checkSession = function()
-	{
-		var integration = mxIntegration.activeIntegration;
-		
-		var cookieId = integration != null ? integration.getUserIDFromCookie(integration.getCookie()) : null;
-
-		// if the cookies value has changed, notify the user about the end of the session
-		if ((mxIntegration.userId != null && mxIntegration.userId != cookieId && !mxIntegration.loggedOut)
-				|| (cookieId == null && !mxIntegration.loggedOut))
-		{
-			mxIntegration.setLoggedIn(false);
-			mxIntegration.showUserControls(false);
-			this.showDialog(new LogoutPopup(this).container, 320, 80, true, true);
-		}
-	};
-
-	LogoutPopup = function(ui)
-	{
-		var div = document.createElement('div');
-		div.setAttribute('align', 'center');
-
-		mxUtils.write(div, mxResources.get('userLoggedOut') + ' ' + mxIntegration.getUsername());
-		mxUtils.br(div);
-		mxUtils.br(div);
-
-		div.appendChild(mxUtils.button(mxResources.get('close'), function()
-		{
-			ui.hideDialog();
-		}));
-
-		this.container = div;
 	}
 
 })();

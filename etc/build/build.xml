@@ -44,6 +44,10 @@
 				<file name="rawdeflate.js" />
 				<file name="base64.js" />
 			</sources>
+			
+			<sources dir="${basedir}/../../war/js/spin">
+				<file name="spin.min.js" />
+			</sources>
 		</jscomp>
 	</target>
 
