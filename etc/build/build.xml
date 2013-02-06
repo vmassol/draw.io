@@ -8,7 +8,7 @@
 	
 	<target name="compile">
 		<jscomp compilationLevel="simple" debug="false" output="${basedir}/../../war/js/diagramly.min.js">
-			<sources dir="${basedir}/../../war/js/mxgraph">
+			<sources dir="${basedir}/../../etc/mxgraph">
 				<file name="mxClient.js" />
 			</sources>
 			
@@ -43,6 +43,14 @@
 			<sources dir="${basedir}/../../war/js/deflate">
 				<file name="rawdeflate.js" />
 				<file name="base64.js" />
+			</sources>
+			
+			<sources dir="${basedir}/../../war/js/spin">
+				<file name="spin.min.js" />
+			</sources>
+			
+			<sources dir="${basedir}/../../war/js/stately">
+				<file name="Stately.js" />
 			</sources>
 		</jscomp>
 	</target>

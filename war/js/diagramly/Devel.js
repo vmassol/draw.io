@@ -1,5 +1,5 @@
 /*
- * $Id: Devel.js,v 1.12 2012-11-08 23:12:06 boris Exp $
+ * $Id: Devel.js,v 1.14 2013-01-16 16:06:57 gaudenz Exp $
  * Copyright (c) 2006-2010, JGraph Ltd
  */
 // This provides an indirection to make sure the mxClient.js
@@ -19,10 +19,10 @@ mxscript(geBasePath +'/Toolbar.js');
 mxscript(geBasePath +'/Dialogs.js');
 
 // Loads main class
-mxscript('/js/diagramly/GoogleDrive.js');
-mxscript('/js/diagramly/Integration.js');
-mxscript('/js/diagramly/Dialogs.js');
-mxscript('/js/diagramly/Sidebar.js');
-mxscript('/js/diagramly/EditorUi.js');
-mxscript('/js/diagramly/Sharing.js');
-mxscript('/js/diagramly/Diagramly.js');
+mxscript('js/diagramly/GoogleDrive.js');
+mxscript('js/diagramly/Integration.js');
+mxscript('js/diagramly/Dialogs.js');
+mxscript('js/diagramly/Sidebar.js');
+mxscript('js/diagramly/EditorUi.js');
+mxscript('js/diagramly/Sharing.js');
+mxscript('js/diagramly/Diagramly.js');

@@ -1,4 +1,4 @@
-(function(stylesheet, stencils)
+(function(stylesheet, stencils, js)
 {
 	// Parses the given stencil set
 	mxStencilRegistry.parseStencilSet = function(xmlDocument, postStencilLoad, install)
@@ -82,15 +82,22 @@
 		return null;
 	};
 	
-	// Adds domain for images without domain
+	// Handles relative images
 	mxGraph.prototype.getImageFromBundles = function(key)
 	{
 		if (key != null)
 		{
-			if (key.charAt(0) == '/')
+			if (key.substring(0, 7) != 'http://' && key.substring(0, 8) != 'https://' && key.substring(0, 10) != 'data:image')
 			{
-				return '//diagramly.appspot.com' + key;
+				if (key.charAt(0) == '/')
+				{
+					key = key.substring(1, key.length);
+				}
+				
+				key = 'http://drawdotio.appspot.com/' + key;
 			}
+			
+			return key;
 		}
 		
 		return null;
@@ -103,6 +110,11 @@
 			var xmlDoc = mxUtils.parseXml(stencils[i]);
 			mxStencilRegistry.parseStencilSet(xmlDoc);
 		}
+	}
+	
+	if (js != null)
+	{
+		eval(js);
 	}
 	
 	// Panning for touch devices
@@ -166,7 +178,7 @@
 								// NOTE: Tooltips require CSS
 								graph.setTooltips(false);
 								graph.setEnabled(false);
-							    
+								
 								// Loads the stylesheet
 								if (stylesheet != null)
 								{
@@ -205,7 +217,6 @@
 								{
 									graph.centerZoom = true;
 								}
-								
 								
 								// Adds handling for hyperlinks
 								// FIXME: For panning links

@@ -40,7 +40,9 @@
 		
 		// Checks for support of the File API for local file access
 		// except for Visio files where the parse is on the server
-		if (window.parent.fileSupport && form.upfile.files.length > 0)
+		var vdxFile = /(\.vdx)$/i.test(form.upfile.value);
+
+		if (window.parent.fileSupport && form.upfile.files.length > 0 && !vdxFile)
 		{
 			handleFiles(form.upfile.files);
 			
@@ -49,7 +51,7 @@
 		else
 		{
 			if (/(\.xml)$/i.test(form.upfile.value) || /(\.txt)$/i.test(form.upfile.value) ||
-				/(\.mxe)$/i.test(form.upfile.value))
+				/(\.mxe)$/i.test(form.upfile.value) || vdxFile)
 			{
 				// Small hack to support import
 				if (window.parent.openNew)

@@ -1,5 +1,5 @@
 /**
- * $Id: EditorUi.js,v 1.56 2012-12-12 09:06:19 gaudenz Exp $
+ * $Id: EditorUi.js,v 1.19 2013-02-02 14:28:02 gaudenz Exp $
  * Copyright (c) 2006-2012, JGraph Ltd
  */
 /**
@@ -43,18 +43,26 @@ EditorUi = function(editor, container)
 			return true;
 		}
 		
-		return graph.isEditing() || this.dialog != null;
+		return graph.isEditing();
 	});
 
 	// Disables text selection while not editing and no dialog visible
 	if (this.container == document.body)
 	{
-		document.onselectstart = textEditing;
-		document.onmousedown = textEditing;
+		this.menubarContainer.onselectstart = textEditing;
+		this.menubarContainer.onmousedown = textEditing;
+		this.toolbarContainer.onselectstart = textEditing;
+		this.toolbarContainer.onmousedown = textEditing;
+		this.diagramContainer.onselectstart = textEditing;
+		this.diagramContainer.onmousedown = textEditing;
+		this.sidebarContainer.onselectstart = textEditing;
+		this.sidebarContainer.onmousedown = textEditing;
+		this.footerContainer.onselectstart = textEditing;
+		this.footerContainer.onmousedown = textEditing;
 	}
 	
 	// And uses built-in context menu while editing
-	if (mxClient.IS_IE && document.documentMode != 9)
+	if (mxClient.IS_IE && (typeof(document.documentMode) === 'undefined' || document.documentMode < 9))
 	{
 		mxEvent.addListener(this.diagramContainer, 'contextmenu', textEditing);
 		mxEvent.addListener(this.sidebarContainer, 'contextmenu', textEditing);
@@ -74,7 +82,8 @@ EditorUi = function(editor, container)
 	graph.container.setAttribute('tabindex', '0');
    	graph.container.style.overflow = (touchStyle) ? 'hidden' : 'auto';
    	graph.container.style.cursor = 'default';
-    graph.container.style.backgroundImage = 'url(' + IMAGE_PATH + '/grid.gif)';
+    graph.container.style.backgroundImage = 'url(' + editor.gridImage + ')';
+    graph.container.style.backgroundPosition = '-1px -1px';
    	graph.container.focus();
    	
    	// Keeps graph container focused on mouse down
@@ -102,8 +111,7 @@ EditorUi = function(editor, container)
 	editor.outline.init(this.outlineContainer);
 	
 	// Hides context menu
-	var md = (mxClient.IS_TOUCH) ? 'touchstart' : 'mousedown';
-	mxEvent.addListener(document, md, mxUtils.bind(this, function(evt)
+	mxEvent.addGestureListeners(document, mxUtils.bind(this, function(evt)
 	{
 		graph.panningHandler.hideMenu();
 	}));
@@ -139,15 +147,6 @@ EditorUi = function(editor, container)
 		return keyHandler;
 	};
 
-	// Shows dialog if changes are lost
-	window.onbeforeunload = function()
-	{
-		if (editor.modified)
-		{
-			return mxResources.get('allChangesLost');
-		}
-	};
-
 	// Updates the editor UI after the window has been resized
    	mxEvent.addListener(window, 'resize', mxUtils.bind(this, function()
    	{
@@ -173,9 +172,9 @@ EditorUi.prototype.splitSize = (mxClient.IS_TOUCH) ? 16 : 8;
 EditorUi.prototype.menubarHeight = 33;
 
 /**
- * Specifies the height of the toolbar. Default is 46.
+ * Specifies the height of the toolbar. Default is 36.
  */
-EditorUi.prototype.toolbarHeight = 37;
+EditorUi.prototype.toolbarHeight = 36;
 
 /**
  * Specifies the height of the footer. Default is 28.
@@ -183,9 +182,9 @@ EditorUi.prototype.toolbarHeight = 37;
 EditorUi.prototype.footerHeight = 28;
 
 /**
- * Specifies the position of the horizontal split bar. Default is 190.
+ * Specifies the position of the horizontal split bar. Default is 212.
  */
-EditorUi.prototype.hsplitPosition = 190;
+EditorUi.prototype.hsplitPosition = 204;
 
 /**
  * Specifies the position of the vertical split bar. Default is 190.
@@ -290,7 +289,7 @@ EditorUi.prototype.save = function(name)
 				}
 
 				localStorage.setItem(name, xml);
-				this.editor.setStatus(mxResources.get('saved'));
+				this.editor.setStatus(mxResources.get('saved') + ' ' + new Date());
 			}
 			else
 			{
@@ -324,7 +323,7 @@ EditorUi.prototype.save = function(name)
 EditorUi.prototype.getUrl = function(pathname)
 {
 	var href = (pathname != null) ? pathname : window.location.pathname;
-	var parms = (pathname.indexOf('?') > 0) ? 1 : 0;
+	var parms = (href.indexOf('?') > 0) ? 1 : 0;
 	
 	// Removes template URL parameter for new blank diagram
 	for (var key in urlParams)
@@ -410,7 +409,7 @@ EditorUi.prototype.addSelectionListener = function()
 		// Updates action states
 		var actions = ['cut', 'copy', 'delete', 'duplicate', 'bold', 'italic', 'style', 'fillColor',
 		               'gradientColor', 'underline', 'fontColor', 'strokeColor', 'backgroundColor',
-		               'borderColor', 'toFront', 'toBack', 'dashed', 'rounded', 'shadow', 'rotate',
+		               'borderColor', 'toFront', 'toBack', 'dashed', 'rounded', 'shadow', 'tilt',
 		               'autosize'];
     	
     	for (var i = 0; i < actions.length; i++)
@@ -418,7 +417,9 @@ EditorUi.prototype.addSelectionListener = function()
     		this.actions.get(actions[i]).setEnabled(selected);
     	}
     	
+    	this.actions.get('curved').setEnabled(edgeSelected);
     	this.actions.get('rotation').setEnabled(vertexSelected);
+    	this.actions.get('wordWrap').setEnabled(vertexSelected);
        	this.actions.get('group').setEnabled(graph.getSelectionCount() > 1);
        	this.actions.get('ungroup').setEnabled(graph.getSelectionCount() == 1 &&
        			graph.getModel().getChildCount(graph.getSelectionCell()) > 0);
@@ -683,19 +684,8 @@ EditorUi.prototype.addSplitHandler = function(elt, horizontal, dx, onChange)
 	function getValue()
 	{
 		return parseInt(((horizontal) ? elt.style.left : elt.style.bottom));
-	}
+	};
 
-	var md = (mxClient.IS_TOUCH) ? 'touchstart' : 'mousedown';
-	var mm = (mxClient.IS_TOUCH) ? 'touchmove' : 'mousemove';
-	var mu = (mxClient.IS_TOUCH) ? 'touchend' : 'mouseup';
-	
-	mxEvent.addListener(elt, md, function(evt)
-	{
-		start = new mxPoint(mxEvent.getClientX(evt), mxEvent.getClientY(evt));
-		initial = getValue();
-		mxEvent.consume(evt);
-	});
-	
 	function moveHandler(evt)
 	{
 		if (start != null)
@@ -704,16 +694,26 @@ EditorUi.prototype.addSplitHandler = function(elt, horizontal, dx, onChange)
 			onChange(Math.max(0, initial + ((horizontal) ? (pt.x - start.x) : (start.y - pt.y)) - dx));
 			mxEvent.consume(evt);
 		}
-	}
+	};
 	
-	mxEvent.addListener(document, mm, moveHandler);
-	
-	mxEvent.addListener(document, mu, function(evt)
+	function dropHandler(evt)
 	{
 		moveHandler(evt);
 		start = null;
 		initial = null;
-	});
+	};
+	
+	mxEvent.addGestureListeners(elt, function(evt)
+		{
+			start = new mxPoint(mxEvent.getClientX(evt), mxEvent.getClientY(evt));
+			initial = getValue();
+			mxEvent.consume(evt);
+		});
+
+	mxEvent.addListener(document, 'mousemove', moveHandler);
+	mxEvent.addListener(document, 'touchmove', moveHandler);
+	mxEvent.addListener(document, 'mouseup', dropHandler);
+	mxEvent.addListener(document, 'touchend', dropHandler);
 };
 
 /**
@@ -917,7 +917,7 @@ EditorUi.prototype.createKeyHandler = function(editor)
     keyHandler.bindKey(40, function() { nudge(40); }); // Down arrow
     keyHandler.bindKey(113, function() { graph.startEditingAtCell(); });
     bindAction(46, false, 'delete'); // Delete
-    bindAction(82, true, 'rotate'); // Ctrl+R
+    bindAction(82, true, 'tilt'); // Ctrl+R
     bindAction(83, true, 'save'); // Ctrl+S
     bindAction(83, true, 'saveAs', true); // Ctrl+Shift+S
     bindAction(107, false, 'zoomIn'); // Add

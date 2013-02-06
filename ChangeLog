@@ -1,3 +1,41 @@
+05-FEB-2012: 2.1.0.1
+
+- Fixes 7 second repeating Google auth dialog bug
+
+04-FEB-2012: 2.1.0.0
+
+- Removes old sharing
+- Fixes relative images in embedded diagrams
+- Uses App Engne SDK 1.7.4
+- Uses mxGraph 2.0.0.0
+
+16-JAN-2013: 2.0.1.7
+
+- Uses mxGraph 1.10.4.2
+- Adds curved format menu item
+- Uses extended image picker if logged into Google
+- Removes devhost URL parameter
+
+20-DEC-2012: 2.0.1.6
+
+- Fixes issue with Google Drive files retaining file name
+
+19-DEC-2012: 2.0.1.5
+
+- Enabled .vdx open/importing (alpha)
+
+19-DEC-2012: 2.0.1.4
+
+- Shows spinner while loading url URL parameter
+- Fixes alignment of SVG sidebar entries in IE
+- Fixes flickering of sidebar entries in FF
+- Adds spinner to minified diagramly
+
+18-DEC-2012: 2.0.1.3
+
+- Uses mxGraph 1.10.4.1
+- Fixes handling of url URL parameter
+
 14-DEC-2012: 2.0.1.2
 
 - Removes plugins feature

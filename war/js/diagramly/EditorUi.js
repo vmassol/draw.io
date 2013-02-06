@@ -114,6 +114,11 @@
 			}
 		}
 
+		if (mxUtils.indexOf(tmp, 'bpmn') < 0)
+		{
+			this.sidebar.togglePalettes('', [ 'bpmn', 'bpmnGateways', 'bpmnEvents' ]);
+		}
+		
 		if (mxUtils.indexOf(tmp, 'clipart') < 0)
 		{
 			this.sidebar.togglePalettes('', [ 'computer', 'finance', 'clipart', 'networking', 'people', 'telco' ]);
@@ -260,8 +265,8 @@
 
 					var t = this.view.translate;
 					var s = this.view.scale;
-					var width = Math.max(0, bounds.x + bounds.width + 1 + border - t.x * s);
-					var height = Math.max(0, bounds.y + bounds.height + 1 + border - t.y * s);
+					var width = Math.max(0, bounds.x + bounds.width + border - t.x * s);
+					var height = Math.max(0, bounds.y + bounds.height + border - t.y * s);
 					var fmt = this.pageFormat;
 					var ps = this.pageScale;
 					var page = new mxRectangle(0, 0, fmt.width * ps, fmt.height * ps);
@@ -269,13 +274,11 @@
 					var hCount = (this.pageBreaksVisible) ? Math.max(1, Math.ceil(width / (page.width * s))) : 1;
 					var vCount = (this.pageBreaksVisible) ? Math.max(1, Math.ceil(height / (page.height * s))) : 1;
 
-					var gb = this.getGraphBounds();
-
 					// Computes unscaled, untranslated graph bounds
-					var x = (gb.width > 0) ? gb.x / this.view.scale - this.view.translate.x : 0;
-					var y = (gb.height > 0) ? gb.y / this.view.scale - this.view.translate.y : 0;
-					var w = gb.width / this.view.scale;
-					var h = gb.height / this.view.scale;
+					var x = (bounds.width > 0) ? bounds.x / this.view.scale - this.view.translate.x : 0;
+					var y = (bounds.height > 0) ? bounds.y / this.view.scale - this.view.translate.y : 0;
+					var w = bounds.width / this.view.scale;
+					var h = bounds.height / this.view.scale;
 
 					var fmt = this.pageFormat;
 					var ps = this.pageScale;
@@ -338,15 +341,14 @@
 			var border = this.getBorder();
 			var t = this.view.translate;
 			var s = this.view.scale;
-			width = Math.max(0, bounds.x + bounds.width + 1 + border - t.x * s);
-			height = Math.max(0, bounds.y + bounds.height + 1 + border - t.y * s);
+			width = Math.max(0, bounds.x + bounds.width + border - t.x * s);
+			height = Math.max(0, bounds.y + bounds.height + border - t.y * s);
 			var fmt = this.pageFormat;
 			var ps = this.pageScale;
 			var page = new mxRectangle(0, 0, fmt.width * ps, fmt.height * ps);
 
 			var hCount = (this.pageBreaksVisible) ? Math.max(1, Math.ceil(width / (page.width * s))) : 1;
 			var vCount = (this.pageBreaksVisible) ? Math.max(1, Math.ceil(height / (page.height * s))) : 1;
-
 			var gb = this.getGraphBounds();
 
 			// Computes unscaled, untranslated graph bounds
@@ -407,35 +409,26 @@
 		graph.sizeDidChange();
 
 		// Sets the default edge
-		var cells = [ new mxCell('', new mxGeometry(0, 0, 0, 0), 'endArrow=none') ];
-		cells[0].edge = true;
-
-		// Uses edge template for connect preview
-		graph.connectionHandler.createEdgeState = function(me)
-		{
-			return graph.view.createState(cells[0]);
-		};
-
-		// Creates new connections from edge template
-		graph.connectionHandler.factoryMethod = function()
-		{
-			return graph.cloneCells([ cells[0] ])[0];
-		};
+		var defaultEdge = new mxCell('', new mxGeometry(0, 0, 0, 0), 'endArrow=none');
+		defaultEdge.geometry.relative = true;
+		defaultEdge.edge = true;
+		
+		graph.setDefaultEdge(defaultEdge);
 
 		// Switch to page view by default
 		this.actions.get('pageView').funct();
 
-		var editorUi = this;
-		var showIntegrationUi =  typeof driveIntegration == 'undefined' ? true : driveIntegration;
-		if(navigator.userAgent.indexOf('MSIE 8') == -1 && navigator.userAgent.indexOf('MSIE 7') == -1 && !mxClient.IS_IE6 && navigator.userAgent.indexOf('MSIE 5') == -1 && showIntegrationUi ) 
+		var showIntegrationUi = typeof(driveIntegration) === 'undefined' ? true : driveIntegration;
+		
+		if ((typeof(gapi) != 'undefined') && showIntegrationUi) 
 		{
-			editorUi.menubar.container.appendChild(this.createIntegrationUi());
+			this.menubar.container.appendChild(this.createIntegrationUi());
 		}
 
-		/*setInterval(function()
+		/*setInterval(mxUtils.bind(this, function()
 		{
-			editorUi.checkSession();
-		}, 1000);*/
+			this.checkSession();
+		}), 1000);*/
 	};
 
 	/**
@@ -468,42 +461,6 @@
 		return href;
 	};
 
-	// Spinner only loaded for Google Drive operations in Init
-	function createSpinner(container)
-	{
-		var opts =
-		{
-			lines : 12, // The number of lines to draw
-			length : 12, // The length of each line
-			width : 5, // The line thickness
-			radius : 10, // The radius of the inner circle
-			rotate : 0, // The rotation offset
-			color : '#000', // #rgb or #rrggbb
-			speed : 1, // Rounds per second
-			trail : 60, // Afterglow percentage
-			shadow : false, // Whether to render a shadow
-			hwaccel : false, // Whether to use hardware acceleration
-			className : 'spinner', // The CSS class to assign to the spinner
-			zIndex : 2e9, // The z-index (defaults to 2000000000)
-			left : container.scrollLeft + container.clientWidth / 2 - 12, // Left
-			// position
-			// relative
-			// to
-			// parent
-			// in
-			// px
-			top : container.scrollTop + container.clientHeight / 2 - 12 // Top
-		// position
-		// relative
-		// to
-		// parent
-		// in px
-		};
-
-		return new Spinner(opts).spin(container);
-	}
-	;
-
 	// Loads the specified template
 	var editorUiOpen = EditorUi.prototype.open;
 	EditorUi.prototype.open = function()
@@ -529,19 +486,23 @@
 			if (documentName != null)
 			{
 				this.connect(documentName);
-			} else if (urlParam != null)
+			}
+			else if (urlParam != null)
 			{
 				// Loads diagram from the given URL
-				var spinner = createSpinner(this.editor.graph.container);
+				var spinner = mxIntegration.createSpinner(this.editor.graph.container);
 				this.editor.setStatus(mxResources.get('loading') + '...');
+				
 				mxUtils.get('proxy?url=' + urlParam, mxUtils.bind(this, function(req)
 				{
 					spinner.stop();
+
 					if (req.getStatus() != 200)
 					{
 						this.editor.setStatus(mxResources.get('fileNotLoaded'));
 						mxUtils.alert(mxResources.get('fileNotLoaded'));
-					} else
+					}
+					else
 					{
 						var text = req.getText();
 
@@ -557,7 +518,8 @@
 
 							this.editor.setStatus('');
 							this.editor.graph.container.focus();
-						} else
+						}
+						else
 						{
 							this.editor.setStatus(mxResources.get('fileNotLoaded'));
 							mxUtils.alert(mxResources.get('fileNotLoaded'));
@@ -591,7 +553,7 @@
 		}
 	};
 
-	EditorUi.prototype.save = function(name)
+	EditorUi.prototype.save = function(name, saveAs)
 	{
 		var editorUi = this;
 
@@ -616,9 +578,10 @@
 					} ];
 				}
 			}
-
-			mxGoogleDrive.saveOrUpdateFile(mxGoogleDrive.fileInfo.id, mxGoogleDrive.fileInfo.parents, name, xml);
-		} else if (useLocalStorage)
+			mxGoogleDrive.stateMachine.save(saveAs ? null : mxGoogleDrive.fileInfo.id, mxGoogleDrive.fileInfo.parents, name, xml);
+			this.editor.filename = name;
+		}
+		else if (useLocalStorage)
 		{
 			if (localStorage.getItem(name) != null && !mxUtils.confirm(mxResources.get('replace', [ name ])))
 			{
@@ -626,17 +589,19 @@
 			}
 
 			localStorage.setItem(name, xml);
-			this.editor.setStatus(mxResources.get('saved'));
+			this.editor.setStatus(mxResources.get('saved') + ' ' + new Date());
 
 			this.editor.filename = name;
 			this.editor.modified = false;
-		} else
+		}
+		else
 		{
 			if (xml.length < MAX_REQUEST_SIZE)
 			{
 				xml = encodeURIComponent(xml);
 				new mxXmlRequest(SAVE_URL, 'filename=' + name + '&xml=' + xml).simulate(document, "_blank");
-			} else
+			}
+			else
 			{
 				mxUtils.alert(mxResources.get('drawingTooLarge'));
 				mxUtils.popup(xml);
@@ -650,7 +615,7 @@
 
 	}
 	// Sharing
-	EditorUi.prototype.connect = function(name, highlight)
+	/*EditorUi.prototype.connect = function(name, highlight)
 	{
 		if (this.sharing == null)
 		{
@@ -658,72 +623,56 @@
 
 			try
 			{
-				sharejs
-						.open(
-								name,
-								'json',
-								SHARE_HOST + '/sjs',
-								mxUtils
-										.bind(
-												this,
-												function(error, doc, connection)
-												{
-													if (doc == null)
-													{
-														mxUtils.alert(error);
-													} else
-													{
-														this.sharing = new Sharing(this.editor.graph.getModel(), doc);
-														this.editor.undoManager.clear();
-														var url = this.getSharingUrl();
+				sharejs.open(name, 'json', SHARE_HOST + '/sjs', mxUtils.bind(this, function(error, doc, connection)
+				{
+					if (doc == null)
+					{
+						mxUtils.alert(error);
+					} else
+					{
+						this.sharing = new Sharing(this.editor.graph.getModel(), doc);
+						this.editor.undoManager.clear();
+						var url = this.getSharingUrl();
 
-														// Together with the
-														// overridden hook
-														// below, this allows
-														// selection inside the
-														// input that shows
-														// the share URL. It
-														// also allows context
-														// menu for copy paste,
-														// deselects when the
-														// focus is lost
-														// and selects all if
-														// the mouse is clicked
-														// inside the input
-														// element.
-														var select = 'var text=document.getElementById(\'shareUrl\');text.style.backgroundColor=\'\';text.focus();text.select();if(window.event!=null){window.event.cancelBubble=true;}return false;';
-														var handlers = 'onmousedown="' + select + '" onclick="' + select + '"';
+						// Together with the overridden hook below, this allows
+						// selection inside the input that shows the share URL. It
+						// also allows context menu for copy paste, deselects when the
+						// focus is lost and selects all if the mouse is clicked
+						// inside the input element.
+						var select = 'var text=document.getElementById(\'shareUrl\');text.style.backgroundColor=\'\';text.focus();text.select();if(window.event!=null){window.event.cancelBubble=true;}return false;';
+						var handlers = 'onmousedown="' + select + '" onclick="' + select + '"';
 
-														if (mxClient.IS_IE && mxClient.IS_SVG)
-														{
-															handlers += ' onblur="document.selection.empty();"';
-														} else if (mxClient.IS_IE)
-														{
-															handlers += ' onmouseup="' + select + '"';
-														}
+						if (mxClient.IS_IE && mxClient.IS_SVG)
+						{
+							handlers += ' onblur="document.selection.empty();"';
+						} else if (mxClient.IS_IE)
+						{
+							handlers += ' onmouseup="' + select + '"';
+						}
 
-														var style = 'color:gray;border:0px;margin:0px;';
+						var style = 'color:gray;border:0px;margin:0px;';
 
-														if (highlight)
-														{
-															style += 'background-color:yellow;';
-														}
+						if (highlight)
+						{
+							style += 'background-color:yellow;';
+						}
 
-														var url = this.getSharingUrl();
-														var footer = document.getElementById('geFooter');
+						var url = this.getSharingUrl();
+						var footer = document.getElementById('geFooter');
 
-														this.editor.setStatus('<input id="shareUrl" style="' + style
-																+ '" type="text" size="50" ' + 'value="' + url + '" readonly ' + handlers
-																+ ' title="' + mxResources.get('shareLink') + '"/>');
+						this.editor.setStatus('<input id="shareUrl" style="' + style
+								+ '" type="text" size="50" ' + 'value="' + url + '" readonly ' + handlers
+								+ ' title="' + mxResources.get('shareLink') + '"/>');
 
-														connection.on('disconnect', mxUtils.bind(this, function()
-														{
-															this.disconnect();
-															this.editor.setStatus(mxResources.get('notConnected'));
-														}));
-													}
-												}));
-			} catch (err)
+						connection.on('disconnect', mxUtils.bind(this, function()
+						{
+							this.disconnect();
+							this.editor.setStatus(mxResources.get('notConnected'));
+						}));
+					}
+				}));
+			}
+			catch (err)
 			{
 				mxUtils.alert(err);
 			}
@@ -741,7 +690,7 @@
 		}
 
 		return editorUiIsSelectionAllowed.apply(this, arguments);
-	};
+	};*/
 
 	// Currently not available via UI
 	EditorUi.prototype.disconnect = function()
@@ -874,7 +823,7 @@
 				this.save(this.editor.getOrCreateFilename());
 			} else
 			{
-				this.showDialog(new SaveDialog(this).container, 300, 80, true, true);
+				this.showDialog(new SaveDialog(this, forceDialog).container, 300, 80, true, true);
 			}
 
 			// Extends code for using flash in save button
@@ -924,70 +873,6 @@
 				}
 			}
 		};
-	}
-
-	//adds the integration UI elements such as 'Integrate with <service-name>' and username and log out link
-	EditorUi.prototype.createIntegrationUi = function()
-	{
-		var editorUi = this;
-
-		var integrationsContainer = document.createElement('div');
-		integrationsContainer.style.cssFloat = 'right';
-		integrationsContainer.style.styleFloat = 'right';
-
-		var intWithDriveBtn = mxGoogleDrive.createIntegrationButton();
-		mxGoogleDrive.editorUi = this;//TODO maybe find a better place for this reference assignment? 
-
-		integrationsContainer.appendChild(intWithDriveBtn);
-		integrationsContainer.appendChild(mxIntegration.createUi());
-
-		return integrationsContainer;
-	}
-
-	EditorUi.prototype.setUserInfo = function(email, userId)
-	{
-		var editorUi = this;
-		editorUi.userInfo = editorUi.userInfo || {};
-		editorUi.userInfo.id = userId;
-		editorUi.userInfo.email = email;
-		editorUi.userInfo.loggedOut = false;
-
-		editorUi.userInfo.emailEl.style.display = 'inline';
-		editorUi.userInfo.logoutEl.style.display = 'inline';
-		editorUi.userInfo.emailEl.innerHTML = email;
-	};
-
-	EditorUi.prototype.checkSession = function()
-	{
-		var integration = mxIntegration.activeIntegration;
-		
-		var cookieId = integration != null ? integration.getUserIDFromCookie(integration.getCookie()) : null;
-
-		// if the cookies value has changed, notify the user about the end of the session
-		if ((mxIntegration.userId != null && mxIntegration.userId != cookieId && !mxIntegration.loggedOut)
-				|| (cookieId == null && !mxIntegration.loggedOut))
-		{
-			mxIntegration.setLoggedIn(false);
-			mxIntegration.showUserControls(false);
-			this.showDialog(new LogoutPopup(this).container, 320, 80, true, true);
-		}
-	};
-
-	LogoutPopup = function(ui)
-	{
-		var div = document.createElement('div');
-		div.setAttribute('align', 'center');
-
-		mxUtils.write(div, mxResources.get('userLoggedOut') + ' ' + mxIntegration.getUsername());
-		mxUtils.br(div);
-		mxUtils.br(div);
-
-		div.appendChild(mxUtils.button(mxResources.get('close'), function()
-		{
-			ui.hideDialog();
-		}));
-
-		this.container = div;
 	}
 
 })();
