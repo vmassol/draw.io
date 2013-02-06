@@ -1,5 +1,5 @@
 /*
- * $Id: Diagramly.js,v 1.48 2013-01-11 10:58:57 gaudenz Exp $
+ * $Id: Diagramly.js,v 1.56 2013-02-04 15:31:32 gaudenz Exp $
  * Copyright (c) 2006-2010, JGraph Ltd
  */
 // For compatibility with open servlet on GAE
@@ -22,9 +22,10 @@ function setCurrentXml(data, filename)
 		mxCellEditor.prototype.startEditing = function(cell, trigger)
 		{
 			mxCellEditorStartEditing.apply(this, arguments);
+			var state = this.graph.view.getState(cell);
 			
 			// Replaces linefeeds for richt text editing
-			if (this.graph.isHtmlLabel(cell) && typeof(tinyMCE) != 'undefined')
+			if (state != null && state.style['html'] == 1 && typeof(tinyMCE) != 'undefined')
 			{
 				this.textarea.style.display = 'none';
 				
@@ -91,7 +92,7 @@ function setCurrentXml(data, filename)
 					this.installedListener = true;
 				}
 
-				tinyMCE.execCommand("mceAddControl", true, "mxCellEditor1");
+				tinyMCE.execCommand('mceAddControl', true, 'mxCellEditor1');
 			}
 			else
 			{
@@ -134,7 +135,9 @@ function setCurrentXml(data, filename)
 		var mxCellEditorFocusLost = mxCellEditor.prototype.focusLost;
 		mxCellEditor.prototype.focusLost = function()
 		{
-			if (!this.graph.isHtmlLabel(this.getEditingCell()) || typeof(tinyMCE) == 'undefined')
+			var state = this.graph.getView().getState(this.editingCell);
+			
+			if (state != null && (state.style['html'] != 1 || typeof(tinyMCE) == 'undefined'))
 			{
 				mxCellEditorFocusLost.apply(this, arguments);
 			}
@@ -270,9 +273,9 @@ function setCurrentXml(data, filename)
 			});
 			
 			addItem(['general'], mxResources.get('general'));
-			addItem(['images'], 'Images');
+			addItem(['images'], mxResources.get('images'));
 			addItem(['uml'], 'UML');
-			addItem(['bpmn'], 'BPMN');
+			addItem(['bpmn', 'bpmnGateways', 'bpmnEvents'], 'BPMN');
 			addItem(['flowchart'], 'Flowchart');
 			addItem(['basic'], mxResources.get('basic'));
 			addItem(['arrows'], mxResources.get('arrows'));
@@ -350,25 +353,17 @@ function setCurrentXml(data, filename)
 		{
 			this.editorUi.showDialog(new ExportDialog(this.editorUi).container, 300, 220, true, true);
 		}), null, null, 'Ctrl+E');
-		this.editorUi.actions.addAction('share', mxUtils.bind(this, function()
+		/*this.editorUi.actions.addAction('share', mxUtils.bind(this, function()
 		{
 			this.editorUi.showDialog(new ShareDialog(this.editorUi).container, 340, 100, true, true);
-		}));
+		}));*/
 		this.editorUi.actions.put('about', new Action(mxResources.get('aboutDrawio'), mxUtils.bind(this, function()
 		{
-			this.editorUi.showDialog(new AboutDialog(this.editorUi).container, 300, 330, true, true);
+			this.editorUi.showDialog(new AboutDialog(this.editorUi).container, 300, 344, true, true);
 		}), null, null, 'F1'));
-		this.editorUi.actions.put('didYouKnow', new Action(mxResources.get('didYouKnow'), mxUtils.bind(this, function()
+		this.editorUi.actions.put('help', new Action('draw.io @ StackExchange', mxUtils.bind(this, function()
 		{
-			window.open('http://forum.jgraph.com/questions/4162');
-		})));
-		this.editorUi.actions.put('help', new Action(mxResources.get('forum'), mxUtils.bind(this, function()
-		{
-			window.open('http://forum.jgraph.com/');
-		})));
-		this.editorUi.actions.put('github', new Action('draw.io @ GitHub', mxUtils.bind(this, function()
-		{
-			window.open('https://github.com/jgraph/draw.io');
+			window.open('http://webapps.stackexchange.com/questions/tagged/draw.io');
 		})));
 		this.editorUi.actions.addAction('image', function()
 		{
@@ -430,7 +425,7 @@ function setCurrentXml(data, filename)
 				if (!mxIntegration.loggedOut || urlParams['picker'] == '2')
 				{
 					var view = new google.picker.View(google.picker.ViewId.DOCS);
-				    view.setMimeTypes("image/png,image/jpeg,image/jpg");
+				    view.setMimeTypes('image/png,image/jpeg,image/jpg');
 				    picker.addView(view);
 				    picker.addView(google.picker.ViewId.PHOTO_UPLOAD);
 					picker.addView(google.picker.ViewId.PHOTOS);
@@ -497,14 +492,14 @@ function setCurrentXml(data, filename)
 		
 		this.put('help', new Menu(mxUtils.bind(this, function(menu, parent)
 		{
-			this.addMenuItems(menu, ['didYouKnow', 'help', '-', 'github', '-', 'about']);
+			this.addMenuItems(menu, ['help', '-', 'about']);
 			
 			if (urlParams['test'] == '1')
 			{
 				// For testing local PNG export
-				mxResources.parse('xmlImageExport=XML Image Export (Local)');
+				mxResources.parse('testDebugImageExport=Debug Image Export');
 				
-				this.editorUi.actions.addAction('xmlImageExport', mxUtils.bind(this, function()
+				this.editorUi.actions.addAction('testDebugImageExport', mxUtils.bind(this, function()
 				{
 					var bounds = graph.getGraphBounds();
 					
@@ -522,88 +517,25 @@ function setCurrentXml(data, filename)
 					mxLog.debug(mxUtils.getPrettyXml(root));
 				}));
 					
-				this.addMenuItems(menu, ['-', 'xmlImageExport'], parent);
-				
-				// For testing local PNG export
-				if (typeof(jsCanvas) != 'undefined')
-				{
-					mxResources.parse('pngExport=PNG Export (Local)');
-					
-					this.editorUi.actions.addAction('pngExport', mxUtils.bind(this, function()
-					{
-						var scale = 1;
-						var bounds = this.editorUi.editor.graph.getGraphBounds();
-						var canvas = document.createElement('canvas');
-						canvas.setAttribute('width', Math.ceil(bounds.width * scale));
-						canvas.setAttribute('height', Math.ceil(bounds.height * scale));
+				this.addMenuItems(menu, ['-', 'testDebugImageExport'], parent);
 
-						var htmlCanvas = new jsCanvas(canvas);
-						htmlCanvas.scale(scale);
-						htmlCanvas.translate(-bounds.x, -bounds.y);
-						
-						var imgExport = new mxImageExport();
-						imgExport.drawState(this.editorUi.editor.graph.getView().getState(this.editorUi.editor.graph.model.root), htmlCanvas);
-
-						htmlCanvas.finish(mxUtils.bind(this, function()
-						{
-							// see above
-							document.body.appendChild(canvas);
-							canvas.style.border = '1px solid gray';
-							this.editorUi.showDialog(canvas, 640, 480, true, true);
-							this.editorUi.dialog.container.style.overflow = 'auto';
-						}));
-					}));
-					
-					this.addMenuItems(menu, ['pngExport'], parent);
-				}
+				mxResources.parse('testShowRtModel=Show RT model');
+				mxResources.parse('testToggleLogging=Toggle Logging');
 				
-				// For testing local PDF export
-				if (typeof(jsPDF) != 'undefined')
-				{
-					mxResources.parse('pdfExport=PDF Export (Local)');
-					
-					this.editorUi.actions.addAction('pdfExport', mxUtils.bind(this, function()
-					{
-						var pdfCanvas = new jsPDF();
-						pdfCanvas.scale(1 / this.editorUi.editor.graph.pageScale);
-						var imgExport = new mxImageExport();
-						imgExport.drawState(this.editorUi.editor.graph.getView().getState(this.editorUi.editor.graph.model.root), pdfCanvas);
-			
-						// Optional - set properties on the document
-						pdfCanvas.setProperties(
-						{
-							title: this.editorUi.editor.getFilename(),
-							creator: 'draw.io'
-						});
-			
-						// Asynchronous handling of output (required for images) requires
-						// the window to be opened in the event handling code so that it
-						// is not getting blocked and displayed as a tab (not a window).
-						var wnd = window.open('about:blank');
-			
-						pdfCanvas.finish(function()
-						{
-							var pdf = pdfCanvas.output();
-							wnd.location.href = 'data:application/pdf;base64,' + Base64.encode(pdf, true);
-						});
-					}));
-					
-					this.addMenuItems(menu, ['pdfExport'], parent);
-				}
-
-				mxResources.parse('snapshot=Snapshot');
-				mxResources.parse('debug=Debug');
-				
-				this.editorUi.actions.addAction('snapshot', mxUtils.bind(this, function()
+				this.editorUi.actions.addAction('testShowRtModel', mxUtils.bind(this, function()
 				{
 					if (this.editorUi.sharing != null)
 					{
-						console.log(this.editorUi.sharing.doc);
+						//console.log(this.editorUi.sharing);
+						mxLog.show();
+						mxLog.debug(this.editorUi.sharing.dump());
 					}
 				}));
 				
-				this.editorUi.actions.addAction('debug', mxUtils.bind(this, function()
+				this.editorUi.actions.addAction('testToggleLogging', mxUtils.bind(this, function()
 				{
+					mxLog.show();
+					
 					if (this.editorUi.sharing != null)
 					{
 						this.editorUi.sharing.logging = !this.editorUi.sharing.logging;
@@ -613,7 +545,7 @@ function setCurrentXml(data, filename)
 							mxLog.show();
 						}
 						
-						mxLog.debug('Debugging ' + ((this.editorUi.sharing.logging) ? 'enabled' : 'disabled'));
+						mxLog.debug('Logging ' + ((this.editorUi.sharing.logging) ? 'enabled' : 'disabled'));
 					}
 					else
 					{
@@ -621,11 +553,11 @@ function setCurrentXml(data, filename)
 					}
 				}));
 				
-				this.addMenuItems(menu, ['-', 'snapshot', 'debug'], parent);
+				this.addMenuItems(menu, ['-', 'testShowRtModel', 'testToggleLogging'], parent);
 				
-				mxResources.parse('showConsole=Show Console');
-				this.editorUi.actions.addAction('showConsole', function() { mxLog.show(); });
-				this.addMenuItems(menu, ['-', 'showConsole']);
+				mxResources.parse('testShowConsole=Show Console');
+				this.editorUi.actions.addAction('testShowConsole', function() { mxLog.show(); });
+				this.addMenuItems(menu, ['-', 'testShowConsole']);
 			}
 		})));
 		this.put('new', new Menu(mxUtils.bind(this, function(menu, parent)
@@ -641,7 +573,7 @@ function setCurrentXml(data, filename)
 		this.put('file', new Menu(mxUtils.bind(this, function(menu, parent)
 		{
 			this.addSubmenu('new', menu, parent);
-			this.addMenuItems(menu, ['open', '-', 'save', 'saveAs', '-', 'export', 'share', 'embed', '-', 'import', 'editFile', '-', 'pageSetup', 'print'], parent);
+			this.addMenuItems(menu, ['open', '-', 'save', 'saveAs', '-', 'import', 'export', '-', 'embed', 'editFile', '-', 'pageSetup', 'print'], parent);
 		})));
 	};
 

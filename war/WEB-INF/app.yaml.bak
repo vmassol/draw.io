@@ -1,0 +1,24 @@
+application: drawdotio
+version: test
+runtime: java
+
+handlers:
+- url: /save/*
+  servlet: com.mxgraph.online.SaveServlet
+- url: /open/*
+  servlet: com.mxgraph.online.OpenServlet
+- url: /proxy/*
+  servlet: com.mxgraph.online.ProxyServlet
+- url: /embed.js/*
+  servlet: com.mxgraph.online.EmbedServlet
+- url: /iconfinder/*
+  servlet: com.mxgraph.online.IconFinderServlet
+  
+static_files:
+  - include: /**.js
+  - include: /**.css
+  - include: /**.properties
+  - include: /**.xml
+  - include: /**.png
+  - include: /**.gif
+  - include: /**.txt

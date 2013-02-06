@@ -1,5 +1,5 @@
 /**
- * $Id: EmbedServlet.java,v 1.9 2012-12-18 13:49:26 gaudenz Exp $
+ * $Id: EmbedServlet.java,v 1.11 2013-02-04 09:40:15 gaudenz Exp $
  * Copyright (c) 2011-2012, JGraph Ltd
  * 
  * TODO
@@ -23,6 +23,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.io.PrintWriter;
+import java.net.URLDecoder;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.Date;
@@ -74,6 +75,11 @@ public class EmbedServlet extends HttpServlet
 	protected HashMap<String, String> stencils = new HashMap<String, String>();
 
 	/**
+	 * 
+	 */
+	protected HashMap<String, String[]> libraries = new HashMap<String, String[]>();
+	
+	/**
 	 * @see HttpServlet#HttpServlet()
 	 */
 	public EmbedServlet()
@@ -90,6 +96,16 @@ public class EmbedServlet extends HttpServlet
 					"EEE, dd MMM yyyy HH:mm:ss z", Locale.US);
 			lastModified = httpDateFormat.format(uploadDate);
 		}
+
+		initLibraries();
+	}
+	
+	/**
+	 * @see HttpServlet#HttpServlet()
+	 */
+	public void initLibraries()
+	{
+		libraries.put("bpmn", new String[]{"/shapes/bpmn/mxBpmnShape2.js", "/stencils/bpmn.xml"});
 	}
 
 	/**
@@ -115,13 +131,13 @@ public class EmbedServlet extends HttpServlet
 			// LATER: Reload if file changed
 			if (stylesheet == null)
 			{
-				stylesheet = readXmlFile("/styles/default.xml");
+				stylesheet = readXmlFile("/styles/default.xml", true);
 			}
 
 			// LATER: Reload if file changed
 			if (generalStencils == null)
 			{
-				generalStencils = readXmlFile("/stencils/general.xml");
+				generalStencils = readXmlFile("/stencils/general.xml", true);
 			}
 
 			// Checks or sets last modified date of delivered content.
@@ -176,6 +192,7 @@ public class EmbedServlet extends HttpServlet
 	public String getStencilsXml(String sparam) throws IOException
 	{
 		StringBuffer result = new StringBuffer("['" + generalStencils + "'");
+		StringBuffer js = new StringBuffer("''");
 
 		// Processes each stencil only once
 		HashSet<String> done = new HashSet<String>();
@@ -188,29 +205,70 @@ public class EmbedServlet extends HttpServlet
 			{
 				if (names[i].indexOf("..") < 0 && !done.contains(names[i]))
 				{
-					done.add(names[i]);
-					String tmp = stencils.get(names[i]);
-
-					if (tmp == null)
+					String[] libs = libraries.get(names[i]);
+					
+					if (libs != null)
 					{
-						tmp = readXmlFile("/stencils/" + names[i] + ".xml");
-
-						// Cache for later use
-						if (tmp != null)
+						for (int j = 0; j < libs.length; j++)
 						{
-							stencils.put(names[i], tmp);
+							String tmp = stencils.get(libs[j]);
+							
+							if (tmp == null)
+							{
+								tmp = readXmlFile(libs[j], !libs[j].toLowerCase().endsWith(".js"));
+		
+								// Cache for later use
+								if (tmp != null)
+								{
+									stencils.put(libs[j], tmp);
+								}
+							}
+
+							if (tmp != null)
+							{
+								// TODO: Add JS to Javascript code inline. This had to be done to quickly
+								// add JS-based dynamic loading to the existing embed setup where everything
+								// dynamic is passed via function call, so an indirection via eval must be
+								// used even though the JS could be parsed directly by adding it to JS.
+								if (libs[j].toLowerCase().endsWith(".js"))
+								{
+									js.append("+decodeURIComponent('" + Utils.encodeURIComponent(tmp) + "')");
+								}
+								else
+								{
+									result.append(",'" + tmp + "'");
+								}
+							}
 						}
 					}
-
-					if (tmp != null)
+					else
 					{
-						result.append(",'" + tmp + "'");
+						String tmp = stencils.get(names[i]);
+	
+						if (tmp == null)
+						{
+							tmp = readXmlFile("/stencils/" + names[i] + ".xml", true);
+	
+							// Cache for later use
+							if (tmp != null)
+							{
+								stencils.put(names[i], tmp);
+							}
+						}
+	
+						if (tmp != null)
+						{
+							result.append(",'" + tmp + "'");
+						}
 					}
+					
+					done.add(names[i]);
 				}
 			}
 		}
 
-		result.append("]");
+		result.append("],");
+		result.append(js);
 
 		return result.toString();
 	}
@@ -226,10 +284,17 @@ public class EmbedServlet extends HttpServlet
 		writer.flush();
 	}
 
-	public String readXmlFile(String filename) throws IOException
+	public String readXmlFile(String filename, boolean replaceLinefeeds) throws IOException
 	{
-		return readFile(filename).replaceAll("\n", "").replaceAll("\t", "")
+		String result = readFile(filename).replaceAll("\t", "")
 				.replaceAll("'", "\\'");
+		
+		if (replaceLinefeeds)
+		{
+			result = result.replaceAll("\n", "");
+		}
+		
+		return result;
 	}
 
 	public String readFile(String filename) throws IOException

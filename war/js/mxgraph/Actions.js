@@ -1,5 +1,5 @@
 /**
- * $Id: Actions.js,v 1.37 2012-12-11 09:42:03 gaudenz Exp $
+ * $Id: Actions.js,v 1.6 2013-01-17 13:42:26 gaudenz Exp $
  * Copyright (c) 2006-2012, JGraph Ltd
  */
 /**
@@ -161,6 +161,18 @@ Actions.prototype.init = function()
 			}
 		}
 	});
+	this.addAction('wordWrap', function()
+	{
+    	var state = graph.getView().getState(graph.getSelectionCell());
+    	var value = 'wrap';
+    	
+    	if (state != null && state.style[mxConstants.STYLE_WHITE_SPACE] == 'wrap')
+    	{
+    		value = null;
+    	}
+
+       	graph.setCellStyles(mxConstants.STYLE_WHITE_SPACE, value);
+	});
 	this.addAction('rotation', function()
 	{
 		var value = '0';
@@ -179,7 +191,7 @@ Actions.prototype.init = function()
         	graph.setCellStyles(mxConstants.STYLE_ROTATION, value);
         }
 	});
-	this.addAction('rotate', function()
+	this.addAction('tilt', function()
 	{
 		var cells = graph.getSelectionCells();
 		
@@ -448,6 +460,7 @@ Actions.prototype.init = function()
 	this.addAction('shadow', function() { graph.toggleCellStyles(mxConstants.STYLE_SHADOW); });
 	this.addAction('dashed', function() { graph.toggleCellStyles(mxConstants.STYLE_DASHED); });
 	this.addAction('rounded', function() { graph.toggleCellStyles(mxConstants.STYLE_ROUNDED); });
+	this.addAction('curved', function() { graph.toggleCellStyles(mxConstants.STYLE_CURVED); });
 	this.addAction('style', function()
 	{
 		var cells = graph.getSelectionCells();
@@ -466,32 +479,32 @@ Actions.prototype.init = function()
 	});
 	this.addAction('setAsDefaultEdge', function()
 	{
+		graph.setDefaultEdge(graph.getSelectionCell());
+	});
+	this.addAction('addWaypoint', function()
+	{
 		var cell = graph.getSelectionCell();
 		
 		if (cell != null && graph.getModel().isEdge(cell))
 		{
-			// Take a snapshot of the cell at the moment of calling
-			var proto = graph.getModel().cloneCells([cell])[0];
+			var handler = editor.graph.selectionCellsHandler.getHandler(cell);
 			
-			// Delete entry-/exitXY styles
-			var style = proto.getStyle();
-			style = mxUtils.setStyle(style, mxConstants.STYLE_ENTRY_X, '');
-			style = mxUtils.setStyle(style, mxConstants.STYLE_ENTRY_Y, '');
-			style = mxUtils.setStyle(style, mxConstants.STYLE_EXIT_X, '');
-			style = mxUtils.setStyle(style, mxConstants.STYLE_EXIT_Y, '');
-			proto.setStyle(style);
-			
-			// Uses edge template for connect preview
-			graph.connectionHandler.createEdgeState = function(me)
+			if (handler instanceof mxEdgeHandler)
 			{
-	    		return graph.view.createState(proto);
-		    };
-	
-		    // Creates new connections from edge template
-		    graph.connectionHandler.factoryMethod = function()
-		    {
-	    		return graph.cloneCells([proto])[0];
-		    };
+				var t = graph.view.translate;
+				handler.addPointAt(handler.state, graph.panningHandler.triggerX - t.x, graph.panningHandler.triggerY - t.y);
+			}
+		}
+	});
+	this.addAction('removeWaypoint', function()
+	{
+		// TODO: Action should run with "this" set to action
+		var rmWaypointAction = ui.actions.get('removeWaypoint');
+		
+		if (rmWaypointAction.handler != null)
+		{
+			// NOTE: Popupevent handled and action updated in Menus.createPopupMenu
+			rmWaypointAction.handler.removePoint(rmWaypointAction.handler.state, rmWaypointAction.index);
 		}
 	});
 	this.addAction('image', function()

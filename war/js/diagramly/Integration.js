@@ -14,12 +14,10 @@ var mxIntegration =
 		this.userControlsEl = document.createElement('div');
 		this.userControlsEl.style.padding = '4px 12px 5px 10px';
 		this.userControlsEl.style.cssFloat = 'right';
-		this.userControlsEl.style.styleFloat = 'right';
 		this.userControlsEl.style.display = 'none';
 
 		this.usernameEl = document.createElement('span');
 		this.usernameEl.style.cssFloat = 'left';
-		this.usernameEl.style.styleFloat = 'left';
 		this.usernameEl.style.padding = '0px 8px 5px 10px';
 		this.usernameEl.style.fontStyle = 'italic';
 		this.usernameEl.style.display = 'none';
@@ -27,7 +25,6 @@ var mxIntegration =
 		this.logoutEl = document.createElement('div');
 		this.logoutEl.className = 'geItem';
 		this.logoutEl.style.cssFloat = 'left';
-		this.logoutEl.style.styleFloat = 'left';
 		this.logoutEl.style.padding = '0px 12px 5px 10px';
 		this.logoutEl.style.display = 'none';
 		this.logoutEl.innerHTML = mxResources.get('signOut', 'Sign Out');
@@ -184,8 +181,10 @@ EditorUi.prototype.createIntegrationUi = function()
 	var editorUi = this;
 
 	var integrationsContainer = document.createElement('div');
-	integrationsContainer.style.cssFloat = 'right';
-	integrationsContainer.style.styleFloat = 'right';
+	integrationsContainer.style.position = 'absolute';
+	integrationsContainer.style.right = '0px';
+	integrationsContainer.style.top = '2px';
+	integrationsContainer.style.backgroundColor = 'white';
 
 	var intWithDriveBtn = mxGoogleDrive.createIntegrationButton();
 	mxGoogleDrive.editorUi = this;//TODO maybe find a better place for this reference assignment? 

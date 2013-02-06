@@ -39,7 +39,7 @@ import com.mxgraph.util.mxUtils;
 import com.objectplanet.image.PngEncoder;
 
 /**
- * Servlet implementation class ImageServlet
+ * Servlet implementation class ImageServlet.
  */
 public class ExportServlet extends HttpServlet
 {
@@ -47,12 +47,17 @@ public class ExportServlet extends HttpServlet
 	/**
 	 * 
 	 */
-	private static final long serialVersionUID = -5040708166131034515L;
+	private static final Logger logger = Logger.getLogger(ExportServlet.class.getName());
+
+	static
+	{
+		Constants.IMAGE_DOMAIN_MATCHES.add("http://img.diagramly.com/");
+	}
 
 	/**
 	 * 
 	 */
-	private static final Logger logger = Logger.getLogger(ExportServlet.class.getName());
+	private static final long serialVersionUID = -5040708166131034515L;
 
 	/**
 	 * 
@@ -70,11 +75,6 @@ public class ExportServlet extends HttpServlet
 	public ExportServlet()
 	{
 		super();
-	}
-
-	static
-	{
-		Constants.IMAGE_DOMAIN_MATCHES.add("http://img.diagramly.com/");
 	}
 
 	/**
@@ -139,7 +139,7 @@ public class ExportServlet extends HttpServlet
 		String tmp = request.getParameter("bg");
 		String xml = getRequestXml(request);
 
-		Color bg = (tmp != null && !tmp.equals("none")) ? mxUtils.parseColor(tmp) : null;
+		Color bg = (tmp != null) ? mxUtils.parseColor(tmp) : null;
 
 		// Checks parameters
 		if (w > 0 && w <= Constants.MAX_WIDTH && h > 0 && h <= Constants.MAX_HEIGHT && format != null && xml != null && xml.length() > 0)
@@ -326,7 +326,7 @@ public class ExportServlet extends HttpServlet
 				{
 					src = "http://" + src.substring(8, src.length());
 				}
-				
+
 				// Relative path handling
 				if (!src.startsWith("http://"))
 				{
@@ -341,7 +341,7 @@ public class ExportServlet extends HttpServlet
 						src = Constants.IMAGE_DOMAIN + src.substring(domain.length(), src.length());
 					}
 				}
-				
+
 				// Uses local image cache by default
 				Hashtable<String, Image> cache = shortCache;
 
@@ -374,8 +374,6 @@ public class ExportServlet extends HttpServlet
 				return image;
 			}
 		};
-
-		g2c.setAutoAntiAlias(true);
 
 		return g2c;
 	}

@@ -1,5 +1,5 @@
 /*
- * $Id: Dialogs.js,v 1.31 2013-01-09 13:48:12 gaudenz Exp $
+ * $Id: Dialogs.js,v 1.38 2013-02-04 17:29:15 boris Exp $
  * Copyright (c) 2006-2010, JGraph Ltd
  */
 /**
@@ -40,7 +40,7 @@ function SaveDialog(editorUi)
 
 	var saveBtn = mxUtils.button(mxResources.get('save'), function()
 	{
-    	editorUi.save(nameInput.value);
+    	editorUi.save(nameInput.value, true);
     	editorUi.hideDialog();
 	});
 	
@@ -462,11 +462,14 @@ function AboutDialog(editorUi)
 	h3.style.margin = '0px';
 	div.appendChild(h3);
 	mxUtils.br(div);
-	mxUtils.write(div, 'draw.io is an example application built using the ');
+	mxUtils.write(div, 'draw.io is an online diagramming');
 	var link = document.createElement('a');
+	mxUtils.br(div);
+	mxUtils.write(div, 'application built using the');
+	mxUtils.br(div);
 	link.setAttribute('href', 'http://www.jgraph.com/mxgraph.html');
 	link.setAttribute('target', '_blank');
-	mxUtils.write(link, 'mxGraph JavaScript Diagramming library');
+	mxUtils.write(link, 'mxGraph JavaScript library');
 	div.appendChild(link);
 	mxUtils.br(div);
 	mxUtils.br(div);
@@ -478,7 +481,7 @@ function AboutDialog(editorUi)
 	mxUtils.br(div);
 	mxUtils.br(div);
 	var small = document.createElement('small');
-	small.innerHTML = '&copy; 2013 JGraph Ltd.<br>All Rights Reserved.';
+	small.innerHTML = '&copy; 2005-2013 JGraph Ltd.<br>All Rights Reserved.';
 	div.appendChild(small);
 	
 	mxEvent.addListener(div, 'click', function(e)
@@ -750,9 +753,10 @@ function ExportDialog(editorUi)
 	
 	function getSvg()
 	{
-		var border = Math.max(0, parseInt(borderInput.value)) + 1;
+		var b = Math.max(0, parseInt(borderInput.value)) + 1;
 		var scale = parseInt(widthInput.value) / width;
 	    var bounds = graph.getGraphBounds();
+		var vs = graph.view.scale;
 
 	    // Prepares SVG document that holds the output
 	    var svgDoc = mxUtils.createXmlDocument();
@@ -770,21 +774,28 @@ function ExportDialog(editorUi)
 				root.setAttribute('style', 'background-color:' + backgroundInput.value);
 			}
 		}
-	    
+
 	    if (svgDoc.createElementNS == null)
 	    {
 	    	root.setAttribute('xmlns', mxConstants.NS_SVG);
+	    	root.setAttribute('xmlns:xlink', mxConstants.NS_XLINK);
 	    }
 	    
-	    root.setAttribute('width', (Math.ceil(bounds.width * scale) + 2 * border) + 'px');
-	    root.setAttribute('height', (Math.ceil(bounds.height * scale) + 2 * border) + 'px');
+	    root.setAttribute('width', (Math.ceil(bounds.width * scale / vs) + 2 * b) + 'px');
+	    root.setAttribute('height', (Math.ceil(bounds.height * scale / vs) + 2 * b) + 'px');
 	    root.setAttribute('version', '1.1');
+	    
+	    // Adds group for anti-aliasing via transform
+	    var group = (svgDoc.createElementNS != null) ?
+		    	svgDoc.createElementNS(mxConstants.NS_SVG, 'g') : svgDoc.createElement('g');
+		group.setAttribute('transform', 'translate(0.5,0.5)');
+		root.appendChild(group);
 	    svgDoc.appendChild(root);
 
-	    // Render graph
-	    var svgCanvas = new mxSvgCanvas2D(root);
-	    svgCanvas.scale(scale);
-	    svgCanvas.translate(Math.floor(-bounds.x) + border, Math.floor(-bounds.y) + border);
+	    // Renders graph. Offset will be multiplied with state's scale when painting state.
+	    var svgCanvas = new mxSvgCanvas2D(group);
+	    svgCanvas.translate(Math.floor((b / scale - bounds.x) / vs), Math.floor((b / scale - bounds.y) / vs));
+	    svgCanvas.scale(scale / vs);
 	    imgExport.drawState(graph.getView().getState(graph.model.root), svgCanvas);
 
 		return mxUtils.getXml(root);
@@ -834,24 +845,25 @@ function ExportDialog(editorUi)
 	    	}
 	        else
 	        {
-				var border = Math.max(0, parseInt(borderInput.value)) + 1;
+				var b = Math.max(0, parseInt(borderInput.value)) + 1;
 				var scale = parseInt(widthInput.value) / width;
 				var bounds = graph.getGraphBounds();
+				var vs = graph.view.scale;
 				
 	        	// New image export
 				var xmlDoc = mxUtils.createXmlDocument();
 				var root = xmlDoc.createElement('output');
 				xmlDoc.appendChild(root);
-				var xmlCanvas = new mxXmlCanvas2D(root);
 				
-				// Render graph
-				xmlCanvas.scale(scale);
-				xmlCanvas.translate(Math.floor(-bounds.x * scale) + border, Math.floor(-bounds.y * scale) + border);
-				imgExport.drawState(graph.getView().getState(graph.model.root), xmlCanvas);
-
+			    // Renders graph. Offset will be multiplied with state's scale when painting state.
+				var xmlCanvas = new mxXmlCanvas2D(root);
+				xmlCanvas.translate(Math.floor((b / scale - bounds.x) / vs), Math.floor((b / scale - bounds.y) / vs));
+				xmlCanvas.scale(scale / vs);
+			    imgExport.drawState(graph.getView().getState(graph.model.root), xmlCanvas);
+			    
 				// Puts request data together
-				var w = Math.ceil(bounds.width * scale) + 2 * border;
-				var h = Math.ceil(bounds.height * scale) + 2 * border;
+				var w = Math.ceil(bounds.width * scale / vs + 2 * b);
+				var h = Math.ceil(bounds.height * scale / vs + 2 * b);
 				var xml = mxUtils.getXml(root);
 				
 				// Requests image if request is valid
@@ -942,7 +954,7 @@ function ExportDialog(editorUi)
 	this.container = table;
 };
 
-function ShareDialog(editorUi)
+/*function ShareDialog(editorUi)
 {
 	var connected = editorUi.sharing != null;
 	var row, td;
@@ -1055,7 +1067,7 @@ function ShareDialog(editorUi)
 	tbody.appendChild(row);
 	table.appendChild(tbody);
 	this.container = table;
-};
+};*/
 
 function FilePickerDialog(editorUi, docs) 
 {

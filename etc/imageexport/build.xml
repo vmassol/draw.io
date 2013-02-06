@@ -21,7 +21,7 @@
 	</target>
 	
 	<target name="war" depends="compile">
-		<war destfile="ImageExport.war" webxml="web.xml">
+		<war destfile="ImageExport2.war" webxml="web.xml">
 			<webinf dir=".">
 				<include name="jetty-web.xml"/>
 			</webinf>

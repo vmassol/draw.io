@@ -92,7 +92,7 @@
 		var MAX_HEIGHT = 6000;
 	
 		// CUSTOM_PARAMETERS - URLs for save and export
-		var EXPORT_URL = 'http://exp.draw.io/ImageExport/export';
+		var EXPORT_URL = 'http://exp.draw.io/ImageExport2/export';
 		var SHARE_HOST = 'http://shr.diagramly.com:8000';
 
 		var SAVE_URL = 'save';
@@ -120,7 +120,6 @@
 		/**
 		 * Parses URL parameters. Supported parameters are (precedence in given order):
 		 * 
-		 * - drive=1: Google Drive mode
 		 * - lang=xy: Specifies the language of the user interface
 		 * - touch=1: Enables a touch-style user interface
 		 * - tmp=name: Loads /templates/name.xml
@@ -137,6 +136,10 @@
 		 * - url=url: Opens diagram from URL (URL should be encoded)
 		 * - share=ID of shared diagram
 		 * - analytics=0: Disables Google Analytics
+		 * - rotation=1: Enables rotation handle
+		 * - gapi=0: Do not load Google APIs
+		 * - rt=0: Do not start rt
+		 * - load=0: Do not load XML file from Drive
 		 * --
 		 * - sharehost=URL for sharing: For developers only
 		 * - export=URL for export: For developers only
@@ -197,7 +200,7 @@
 		var mxBasePath = 'mxgraph';
 		
 		// Used to request grapheditor/mxgraph sources in dev mode
-		var mxDevUrl = 'http://devhost.jgraph.com/mxgraph';
+		var mxDevUrl = 'http://devhost.jgraph.com/mxgraph2';
 
 		// Customizes sharing host
 		var share = urlParams['sharehost'];
@@ -229,6 +232,7 @@
 			mxscript('js/sharejs/json.uncompressed.js');
 			mxscript('js/deflate/rawdeflate.js');
 			mxscript('js/deflate/base64.js');
+			mxscript('js/stately/Stately.js');
 			
 			// Adds all JS code that depends on mxClient. This indirection via Devel.js is
 			// required in some browsers to make sure mxClient.js (and the files that it
@@ -240,23 +244,16 @@
 			mxscript('js/diagramly.min.js');
 		}
 
+		// Loads gapi for all browsers but IE8 and below
+		if(urlParams['gapi'] != '0' && (navigator.userAgent.indexOf('MSIE') == -1 || (document.documentMode != null && document.documentMode >= 9)))
+		{
+			mxscript('https://apis.google.com/js/api.js');
+		}
+
 		// Testing shapes
 		if (urlParams['test'] == '1')
 		{
-			mxscript('shapes/bpmn/mxBpmnShape.js');
-			mxscript('shapes/bpmn/mxBpmnEditorHelper.js');
-			
-			// don't change the order of mockup scripts except if you know what you are doing
-			mxscript('shapes/mockup/MockupInit.js');
-			mxscript('shapes/mockup/Buttons.js');
-			mxscript('shapes/mockup/Containers.js');
-			mxscript('shapes/mockup/Forms.js');
-			mxscript('shapes/mockup/Graphics.js');
-			mxscript('shapes/mockup/Misc.js');
-			mxscript('shapes/mockup/Navigation.js');
-			mxscript('shapes/mockup/Markup.js');
-			mxscript('shapes/mockup/Text.js');
-			mxscript('shapes/mockup/MockupFinal.js');
+			mxscript('js/diagramly/Test.js');
 		}
 
 		// Loads JSON for older browsers
@@ -309,39 +306,52 @@
 </noscript>
 <div id="geFooter" style="visibility:hidden;padding-top:6px;padding-left:6px;">
 	<table width="100%" height="100%" align="right">
-	  <tr> 
-		<td id="gePowered" width="20%" valign="top" align="left" style="white-space:nowrap;overflow:hidden;padding-top:3px;font-family:'Helvetica Neue',Arial,sans-serif;padding-right:8px;_padding-right:16px;"> 
-	      <a title="Powered by mxGraph" href="http://www.jgraph.com" target="_blank" style="font-size:8pt;text-decoration:none;font-weight:bold;color:#454545;">
+	  <tr>
+		<td id="gePowered" width="25%" valign="top" align="left" style="white-space:nowrap;overflow:hidden;padding-top:3px;font-family:'Helvetica Neue',Arial,sans-serif;padding-right:8px;_padding-right:16px;"> 
+	      <a title="Powered by mxGraph" href="http://www.jgraph.com/mxgraph.html" target="_blank" style="font-size:8pt;text-decoration:none;font-weight:bold;color:#454545;">
 	      Powered by mxGraph
 	      </a>
 	    </td>
-		<td id="gePlug1" width="20%" valign="top" align="center" style="overflow:hidden;padding-top:3px;_padding-top:7px;font-family:'Helvetica Neue',Arial,sans-serif;padding-right:8px;_padding-right:16px;"> 
+		<td id="gePlug1" width="25%" valign="top" align="center" style="overflow:hidden;padding-top:3px;_padding-top:7px;font-family:'Helvetica Neue',Arial,sans-serif;padding-right:8px;_padding-right:16px;"> 
 	      <a title="Confluence Plugin" href="https://marketplace.atlassian.com/plugins/com.mxgraph.confluence.plugins.diagramly" target="_blank" style="font-size:8pt;white-space:nowrap;text-decoration:none;font-weight:bold;color:#454545;">
 	      	Confluence&reg Plugin
 	      </a>
 	    </td>
-		<td id="gePlug2" width="20%" valign="top" align="center" style="overflow:hidden;padding-top:3px;_padding-top:7px;font-family:'Helvetica Neue',Arial,sans-serif;padding-right:8px;_padding-right:16px;"> 
+		<td id="gePlug2" width="25%" valign="top" align="center" style="overflow:hidden;padding-top:3px;_padding-top:7px;font-family:'Helvetica Neue',Arial,sans-serif;padding-right:8px;_padding-right:16px;"> 
 	      <a title="Google Apps For Business" href="https://www.google.com/enterprise/marketplace/viewListing?productListingId=18806+14512935155953175632" target="_blank" style="font-size:8pt;white-space:nowrap;text-decoration:none;font-weight:bold;color:#454545;">
 	      	Add to Google Apps For Business
 	      </a>
 	    </td>
-	    <td id="geDonate" width="20%" valign="top" align="center" style="overflow:hidden;padding-top:3px;_padding-top:7px;font-family:'Helvetica Neue',Arial,sans-serif;padding-right:8px;_padding-right:16px;"> 
-	      <a title="Donate" href="http://www.justgiving.com/draw-io" target="_blank" style="font-size:8pt;white-space:nowrap;text-decoration:none;font-weight:bold;color:#454545;">
-	      	Donate
-	      </a>
-	    </td>
-	    <td id="geSocial" width="20%" align="center" style="white-space:nowrap;overflow:hidden;padding-bottom:10px;">
+	    <td id="geSocial" width="25%" align="right" style="white-space:nowrap;overflow:hidden;padding-bottom:10px;padding-right:20px;">
 	      <a href="https://plus.google.com/b/100634082864796769666/" target="__blank"><img title="Draw.io on Google+" src="images/web/glyphicons_362_google+_alt.png" width="24" height="24" border=""></a>
 	      <a href="https://twitter.com/Diagramly" target="__blank"><img title="Draw.io on Twitter" src="images/web/glyphicons_392_twitter.png" width="24" height="24" border=""></a>
 	      <a href="http://www.facebook.com/pages/drawio/161015263923018" target="__blank"><img title="Draw.io on Facebook" src="images/web/glyphicons_390_facebook.png" width="24" height="24" border=""></a>
 	      <a href="https://github.com/jgraph/draw.io" target="__blank"><img title="Draw.io on Github" src="images/web/glyphicons_381_github.png" width="24" height="24" border=""></a>
 	    </td>
-	  </tr> 
+	  </tr>
 	</table>
 </div>
 <!-- Main -->
 <script type="text/javascript">
-new EditorUi(new Editor());
+(function()
+{
+	var ui = new EditorUi(new Editor());
+
+	if (typeof(gapi) != 'undefined')
+	{
+		//once the Google API is loaded, try to integrate with it
+		gapi.load('auth:client', function() 
+		{
+			gapi.client.setApiKey(mxGoogleDrive.apiKey);
+
+			gapi.auth.init(function()
+			{
+				// TODO: Check if client successfully loaded in IE9
+				mxIntegration.startIntegration();
+			});
+		});
+	}
+})();
 </script>
 <!-- tinyMCE - LATER: Do not load if touchStyle is true. -->
 <script src="js/tiny_mce/tiny_mce.js"></script>
@@ -425,22 +435,6 @@ if (urlParams['test'] == '1' || urlParams['dev'] == '1')
 	mxLog.debug('Export:', EXPORT_URL);
 	mxLog.debug('Development mode:', (urlParams['dev'] == '1') ? 'active' : 'inactive');
 	mxLog.debug('Test mode:', (urlParams['test'] == '1') ? 'active' : 'inactive');
-}
-
-//do not integrate with Google Drive for IE8 and below
-if(navigator.userAgent.indexOf('MSIE 7') == -1 && !mxClient.IS_IE6 && navigator.userAgent.indexOf('MSIE 5') == -1 && navigator.userAgent.indexOf('MSIE 8') == -1) 
-{
-	//once the Google API is loaded, try to integrate with it
-	var handleApiLoad = function() 
-	{ 
-		gapi.client.setApiKey(mxGoogleDrive.apiKey);
-		gapi.auth.init(
-				function(resp)
-				{
-					mxIntegration.startIntegration();
-				});
-	};
-	mxscript('https://apis.google.com/js/client.js?onload=handleApiLoad');
 }
 </script>
 </body>

@@ -1,5 +1,5 @@
 /*
- * $Id: Devel.js,v 1.13 2012-12-20 10:46:13 david Exp $
+ * $Id: Devel.js,v 1.14 2013-01-16 16:06:57 gaudenz Exp $
  * Copyright (c) 2006-2010, JGraph Ltd
  */
 // This provides an indirection to make sure the mxClient.js

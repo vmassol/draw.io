@@ -114,6 +114,11 @@
 			}
 		}
 
+		if (mxUtils.indexOf(tmp, 'bpmn') < 0)
+		{
+			this.sidebar.togglePalettes('', [ 'bpmn', 'bpmnGateways', 'bpmnEvents' ]);
+		}
+		
 		if (mxUtils.indexOf(tmp, 'clipart') < 0)
 		{
 			this.sidebar.togglePalettes('', [ 'computer', 'finance', 'clipart', 'networking', 'people', 'telco' ]);
@@ -260,8 +265,8 @@
 
 					var t = this.view.translate;
 					var s = this.view.scale;
-					var width = Math.max(0, bounds.x + bounds.width + 1 + border - t.x * s);
-					var height = Math.max(0, bounds.y + bounds.height + 1 + border - t.y * s);
+					var width = Math.max(0, bounds.x + bounds.width + border - t.x * s);
+					var height = Math.max(0, bounds.y + bounds.height + border - t.y * s);
 					var fmt = this.pageFormat;
 					var ps = this.pageScale;
 					var page = new mxRectangle(0, 0, fmt.width * ps, fmt.height * ps);
@@ -269,13 +274,11 @@
 					var hCount = (this.pageBreaksVisible) ? Math.max(1, Math.ceil(width / (page.width * s))) : 1;
 					var vCount = (this.pageBreaksVisible) ? Math.max(1, Math.ceil(height / (page.height * s))) : 1;
 
-					var gb = this.getGraphBounds();
-
 					// Computes unscaled, untranslated graph bounds
-					var x = (gb.width > 0) ? gb.x / this.view.scale - this.view.translate.x : 0;
-					var y = (gb.height > 0) ? gb.y / this.view.scale - this.view.translate.y : 0;
-					var w = gb.width / this.view.scale;
-					var h = gb.height / this.view.scale;
+					var x = (bounds.width > 0) ? bounds.x / this.view.scale - this.view.translate.x : 0;
+					var y = (bounds.height > 0) ? bounds.y / this.view.scale - this.view.translate.y : 0;
+					var w = bounds.width / this.view.scale;
+					var h = bounds.height / this.view.scale;
 
 					var fmt = this.pageFormat;
 					var ps = this.pageScale;
@@ -338,15 +341,14 @@
 			var border = this.getBorder();
 			var t = this.view.translate;
 			var s = this.view.scale;
-			width = Math.max(0, bounds.x + bounds.width + 1 + border - t.x * s);
-			height = Math.max(0, bounds.y + bounds.height + 1 + border - t.y * s);
+			width = Math.max(0, bounds.x + bounds.width + border - t.x * s);
+			height = Math.max(0, bounds.y + bounds.height + border - t.y * s);
 			var fmt = this.pageFormat;
 			var ps = this.pageScale;
 			var page = new mxRectangle(0, 0, fmt.width * ps, fmt.height * ps);
 
 			var hCount = (this.pageBreaksVisible) ? Math.max(1, Math.ceil(width / (page.width * s))) : 1;
 			var vCount = (this.pageBreaksVisible) ? Math.max(1, Math.ceil(height / (page.height * s))) : 1;
-
 			var gb = this.getGraphBounds();
 
 			// Computes unscaled, untranslated graph bounds
@@ -407,35 +409,26 @@
 		graph.sizeDidChange();
 
 		// Sets the default edge
-		var cells = [ new mxCell('', new mxGeometry(0, 0, 0, 0), 'endArrow=none') ];
-		cells[0].edge = true;
-
-		// Uses edge template for connect preview
-		graph.connectionHandler.createEdgeState = function(me)
-		{
-			return graph.view.createState(cells[0]);
-		};
-
-		// Creates new connections from edge template
-		graph.connectionHandler.factoryMethod = function()
-		{
-			return graph.cloneCells([ cells[0] ])[0];
-		};
+		var defaultEdge = new mxCell('', new mxGeometry(0, 0, 0, 0), 'endArrow=none');
+		defaultEdge.geometry.relative = true;
+		defaultEdge.edge = true;
+		
+		graph.setDefaultEdge(defaultEdge);
 
 		// Switch to page view by default
 		this.actions.get('pageView').funct();
 
-		var editorUi = this;
-		var showIntegrationUi =  typeof driveIntegration == 'undefined' ? true : driveIntegration;
-		if(navigator.userAgent.indexOf('MSIE 8') == -1 && navigator.userAgent.indexOf('MSIE 7') == -1 && !mxClient.IS_IE6 && navigator.userAgent.indexOf('MSIE 5') == -1 && showIntegrationUi ) 
+		var showIntegrationUi = typeof(driveIntegration) === 'undefined' ? true : driveIntegration;
+		
+		if ((typeof(gapi) != 'undefined') && showIntegrationUi) 
 		{
-			editorUi.menubar.container.appendChild(this.createIntegrationUi());
+			this.menubar.container.appendChild(this.createIntegrationUi());
 		}
 
-		/*setInterval(function()
+		/*setInterval(mxUtils.bind(this, function()
 		{
-			editorUi.checkSession();
-		}, 1000);*/
+			this.checkSession();
+		}), 1000);*/
 	};
 
 	/**
@@ -560,7 +553,7 @@
 		}
 	};
 
-	EditorUi.prototype.save = function(name)
+	EditorUi.prototype.save = function(name, saveAs)
 	{
 		var editorUi = this;
 
@@ -585,7 +578,7 @@
 					} ];
 				}
 			}
-			mxGoogleDrive.saveOrUpdateFile(mxGoogleDrive.fileInfo.id, mxGoogleDrive.fileInfo.parents, name, xml);
+			mxGoogleDrive.stateMachine.save(saveAs ? null : mxGoogleDrive.fileInfo.id, mxGoogleDrive.fileInfo.parents, name, xml);
 			this.editor.filename = name;
 		}
 		else if (useLocalStorage)
@@ -596,7 +589,7 @@
 			}
 
 			localStorage.setItem(name, xml);
-			this.editor.setStatus(mxResources.get('saved'));
+			this.editor.setStatus(mxResources.get('saved') + ' ' + new Date());
 
 			this.editor.filename = name;
 			this.editor.modified = false;
@@ -622,7 +615,7 @@
 
 	}
 	// Sharing
-	EditorUi.prototype.connect = function(name, highlight)
+	/*EditorUi.prototype.connect = function(name, highlight)
 	{
 		if (this.sharing == null)
 		{
@@ -697,7 +690,7 @@
 		}
 
 		return editorUiIsSelectionAllowed.apply(this, arguments);
-	};
+	};*/
 
 	// Currently not available via UI
 	EditorUi.prototype.disconnect = function()
@@ -830,7 +823,7 @@
 				this.save(this.editor.getOrCreateFilename());
 			} else
 			{
-				this.showDialog(new SaveDialog(this).container, 300, 80, true, true);
+				this.showDialog(new SaveDialog(this, forceDialog).container, 300, 80, true, true);
 			}
 
 			// Extends code for using flash in save button

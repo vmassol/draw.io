@@ -1,0 +1,231 @@
+<!--
+  $Id: markers.html,v 1.1 2013-01-16 16:06:57 gaudenz Exp $
+  Copyright (c) 2006-2010, JGraph Ltd
+  
+  Markers example for mxGraph ER (entity relation) edges. This example demonstrates creating
+  custom markers and customizing the built-in markers.
+-->
+<html>
+<head>
+	<title>Markers example for mxGraph</title>
+
+	<!-- Sets the basepath for the library if not in same directory -->
+	<script type="text/javascript">
+		mxBasePath = '../../../javascript/src';
+	</script>
+
+	<!-- Loads and initializes the library -->
+	<script type="text/javascript" src="../../../javascript/src/js/mxClient.js"></script>
+	<script type="text/javascript" src="initER.js"></script>
+	<script type="text/javascript" src="mxER.js"></script>
+
+	<!-- Example code -->
+	<script type="text/javascript">
+		// Program starts here. Creates a sample graph in the
+		// DOM node with the specified ID. This function is invoked
+		// from the onLoad event handler of the document (see below).
+		function main(container)
+		{
+			// Checks if the browser is supported
+			if (!mxClient.isBrowserSupported())
+			{
+				// Displays an error message if the browser is not supported.
+				mxUtils.error('Browser is not supported!', 200, false);
+			}
+			else
+			{
+				// Enables guides
+				mxGraphHandler.prototype.guidesEnabled = true;
+				mxEdgeHandler.prototype.snapToTerminals = true;
+
+				// Registers and defines the custom marker
+				mxMarker.addMarker('dash', function(canvas, shape, type, pe, unitX, unitY, size, source, sw, filled)
+				{
+					var nx = unitX * (size + sw + 1);
+					var ny = unitY * (size + sw + 1);
+
+					return function()
+					{
+						canvas.begin();
+						canvas.moveTo(pe.x - nx / 2 - ny / 2, pe.y - ny / 2 + nx / 2);
+						canvas.lineTo(pe.x + ny / 2 - 3 * nx / 2, pe.y - 3 * ny / 2 - nx / 2);
+						canvas.stroke();
+					};
+				});
+				
+				// Defines custom message shape
+				function MessageShape()
+				{
+					mxCylinder.call(this);
+				};
+				mxUtils.extend(MessageShape, mxCylinder);
+				MessageShape.prototype.redrawPath = function(path, x, y, w, h, isForeground)
+				{
+					if (isForeground)
+					{
+						path.moveTo(0, 0);
+						path.lineTo(w / 2, h / 2);
+						path.lineTo(w, 0);
+					}
+					else
+					{
+						path.moveTo(0, 0);
+						path.lineTo(w, 0);
+						path.lineTo(w, h);
+						path.lineTo(0, h);
+						path.close();
+					}
+				};
+
+				// Registers the message shape
+				mxCellRenderer.prototype.defaultShapes['message'] = MessageShape;
+				
+				// Defines custom edge shape
+				function LinkShape()
+				{
+					mxArrow.call(this);
+				};
+				mxUtils.extend(LinkShape, mxArrow);
+				LinkShape.prototype.paintEdgeShape = function(c, pts)
+				{
+					var width = 10;
+
+					// Base vector (between end points)
+					var p0 = pts[0];
+					var pe = pts[pts.length - 1];
+					
+					var dx = pe.x - p0.x;
+					var dy = pe.y - p0.y;
+					var dist = Math.sqrt(dx * dx + dy * dy);
+					var length = dist;
+					
+					// Computes the norm and the inverse norm
+					var nx = dx / dist;
+					var ny = dy / dist;
+					var basex = length * nx;
+					var basey = length * ny;
+					var floorx = width * ny/3;
+					var floory = -width * nx/3;
+					
+					// Computes points
+					var p0x = p0.x - floorx / 2;
+					var p0y = p0.y - floory / 2;
+					var p1x = p0x + floorx;
+					var p1y = p0y + floory;
+					var p2x = p1x + basex;
+					var p2y = p1y + basey;
+					var p3x = p2x + floorx;
+					var p3y = p2y + floory;
+					// p4 not necessary
+					var p5x = p3x - 3 * floorx;
+					var p5y = p3y - 3 * floory;
+					
+					c.begin();
+					c.moveTo(p1x, p1y);
+					c.lineTo(p2x, p2y);
+					c.moveTo(p5x + floorx, p5y + floory);
+					c.lineTo(p0x, p0y);
+					c.stroke();
+				};
+
+				// Registers the link shape
+				mxCellRenderer.prototype.defaultShapes['link'] = LinkShape;
+
+				// Creates the graph
+				var graph = new mxGraph(container);
+				
+				// Sets default styles
+				var style = graph.getStylesheet().getDefaultVertexStyle();
+				style['fillColor'] = '#FFFFFF';
+				style['strokeColor'] = '#000000';
+				style['fontColor'] = '#000000';
+				style['fontStyle'] = '1';
+				
+				style = graph.getStylesheet().getDefaultEdgeStyle();
+				style['strokeColor'] = '#000000';
+				style['fontColor'] = '#000000';
+				style['fontStyle'] = '0';
+				style['fontStyle'] = '0';
+				style['startSize'] = '8';
+				style['endSize'] = '8';
+
+				// Populates the graph
+				var parent = graph.getDefaultParent();
+								
+				graph.getModel().beginUpdate();
+				try
+				{
+					var s = mxConstants.STYLE_VERTICAL_LABEL_POSITION + '=' + mxConstants.ALIGN_BOTTOM + ';' + mxConstants.STYLE_VERTICAL_ALIGN + '=' + mxConstants.ALIGN_TOP + ';' + mxConstants.STYLE_STROKEWIDTH + '=2;';
+					
+					var v1a = graph.insertVertex(parent, null, 'v1a', 20, 20, 80, 30, s + mxConstants.STYLE_SHAPE + '=' + mxERC.SHAPE_ENTITY + ';' + mxConstants.STYLE_STROKECOLOR + '=#666666;' + mxERC.STYLE_TEXTCOLOR + '=#ffffff;' + mxERC.BUTTON_TEXT + '=Entity;' + mxERC.BUTTON_STYLE + '=' + mxERC.RECT + ';' + mxConstants.STYLE_FONTSIZE + '=17;' + mxConstants.STYLE_FILLCOLOR + '=#008cff;');
+					var v1b = graph.insertVertex(parent, null, 'v1b', 440, 20, 80, 30, s + mxConstants.STYLE_SHAPE + '=' + mxERC.SHAPE_ENTITY + ';' + mxConstants.STYLE_STROKECOLOR + '=#666666;' + mxERC.STYLE_TEXTCOLOR + '=#ffffff;' + mxERC.BUTTON_TEXT + '=Entity;' + mxERC.BUTTON_STYLE + '=' + mxERC.RECT + ';' + mxConstants.STYLE_FONTSIZE + '=17;' + mxConstants.STYLE_FILLCOLOR + '=#008cff;');
+					var e1 = graph.insertEdge(parent, null, '', v1a, v1b, mxConstants.STYLE_ENDARROW + '=' + mxERC.MARKER_ZERO_TO_MANY + ';endFill=1;');
+
+					var v2a = graph.insertVertex(parent, null, 'v2a', 20, 80, 80, 30, s + mxConstants.STYLE_SHAPE + '=' + mxERC.SHAPE_ENTITY + ';' + mxConstants.STYLE_STROKECOLOR + '=#666666;' + mxERC.STYLE_TEXTCOLOR + '=#ffffff;' + mxERC.BUTTON_TEXT + '=Entity;' + mxERC.BUTTON_STYLE + '=' + mxERC.RECT + ';' + mxConstants.STYLE_FONTSIZE + '=17;' + mxConstants.STYLE_FILLCOLOR + '=#008cff;');
+					var v2b = graph.insertVertex(parent, null, 'v2b', 440, 80, 80, 30, s + mxConstants.STYLE_SHAPE + '=' + mxERC.SHAPE_ENTITY + ';' + mxConstants.STYLE_STROKECOLOR + '=#666666;' + mxERC.STYLE_TEXTCOLOR + '=#ffffff;' + mxERC.BUTTON_TEXT + '=Entity;' + mxERC.BUTTON_STYLE + '=' + mxERC.RECT + ';' + mxConstants.STYLE_FONTSIZE + '=17;' + mxConstants.STYLE_FILLCOLOR + '=#008cff;');
+					var e2 = graph.insertEdge(parent, null, '', v2a, v2b, mxConstants.STYLE_ENDARROW + '=' + mxERC.MARKER_ONE_TO_MANY + ';');
+
+					var v3a = graph.insertVertex(parent, null, 'v3a', 20, 140, 80, 30, s + mxConstants.STYLE_SHAPE + '=' + mxERC.SHAPE_ENTITY + ';' + mxConstants.STYLE_STROKECOLOR + '=#666666;' + mxERC.STYLE_TEXTCOLOR + '=#ffffff;' + mxERC.BUTTON_TEXT + '=Entity;' + mxERC.BUTTON_STYLE + '=' + mxERC.RECT + ';' + mxConstants.STYLE_FONTSIZE + '=17;' + mxConstants.STYLE_FILLCOLOR + '=#008cff;');
+					var v3b = graph.insertVertex(parent, null, 'v3b', 440, 140, 80, 30, s + mxConstants.STYLE_SHAPE + '=' + mxERC.SHAPE_ENTITY + ';' + mxConstants.STYLE_STROKECOLOR + '=#666666;' + mxERC.STYLE_TEXTCOLOR + '=#ffffff;' + mxERC.BUTTON_TEXT + '=Entity;' + mxERC.BUTTON_STYLE + '=' + mxERC.RECT + ';' + mxConstants.STYLE_FONTSIZE + '=17;' + mxConstants.STYLE_FILLCOLOR + '=#008cff;');
+					var e3 = graph.insertEdge(parent, null, '', v3a, v3b, mxConstants.STYLE_ENDARROW + '=' + mxERC.MARKER_MANDATORY_ONE + ';');
+
+					var v4a = graph.insertVertex(parent, null, 'v4a', 20, 200, 80, 30, s + mxConstants.STYLE_SHAPE + '=' + mxERC.SHAPE_ENTITY + ';' + mxConstants.STYLE_STROKECOLOR + '=#666666;' + mxERC.STYLE_TEXTCOLOR + '=#ffffff;' + mxERC.BUTTON_TEXT + '=Entity;' + mxERC.BUTTON_STYLE + '=' + mxERC.RECT + ';' + mxConstants.STYLE_FONTSIZE + '=17;' + mxConstants.STYLE_FILLCOLOR + '=#008cff;');
+					var v4b = graph.insertVertex(parent, null, 'v4b', 440, 200, 80, 30, s + mxConstants.STYLE_SHAPE + '=' + mxERC.SHAPE_ENTITY + ';' + mxConstants.STYLE_STROKECOLOR + '=#666666;' + mxERC.STYLE_TEXTCOLOR + '=#ffffff;' + mxERC.BUTTON_TEXT + '=Entity;' + mxERC.BUTTON_STYLE + '=' + mxERC.RECT + ';' + mxConstants.STYLE_FONTSIZE + '=17;' + mxConstants.STYLE_FILLCOLOR + '=#008cff;');
+					var e4 = graph.insertEdge(parent, null, '', v4a, v4b, mxConstants.STYLE_STARTARROW + '=' + mxERC.MARKER_MANDATORY_ONE + ';' + mxConstants.STYLE_ENDARROW + '=' + mxERC.MARKER_MANDATORY_ONE + ';');
+
+					var v5a = graph.insertVertex(parent, null, 'v5a', 20, 260, 80, 30, s + mxConstants.STYLE_SHAPE + '=' + mxERC.SHAPE_ENTITY + ';' + mxConstants.STYLE_STROKECOLOR + '=#666666;' + mxERC.STYLE_TEXTCOLOR + '=#ffffff;' + mxERC.BUTTON_TEXT + '=Entity;' + mxERC.BUTTON_STYLE + '=' + mxERC.RECT + ';' + mxConstants.STYLE_FONTSIZE + '=17;' + mxConstants.STYLE_FILLCOLOR + '=#008cff;');
+					var v5b = graph.insertVertex(parent, null, 'v5b', 440, 260, 80, 30, s + mxConstants.STYLE_SHAPE + '=' + mxERC.SHAPE_ENTITY + ';' + mxConstants.STYLE_STROKECOLOR + '=#666666;' + mxERC.STYLE_TEXTCOLOR + '=#ffffff;' + mxERC.BUTTON_TEXT + '=Entity;' + mxERC.BUTTON_STYLE + '=' + mxERC.RECT + ';' + mxConstants.STYLE_FONTSIZE + '=17;' + mxConstants.STYLE_FILLCOLOR + '=#008cff;');
+					var e5 = graph.insertEdge(parent, null, '', v5a, v5b, mxConstants.STYLE_ENDARROW + '=' + mxERC.MARKER_ONE + ';endFill=1;');
+
+					var v6a = graph.insertVertex(parent, null, 'v6a', 20, 320, 80, 30, s + mxConstants.STYLE_SHAPE + '=' + mxERC.SHAPE_ENTITY + ';' + mxConstants.STYLE_STROKECOLOR + '=#666666;' + mxERC.STYLE_TEXTCOLOR + '=#ffffff;' + mxERC.BUTTON_TEXT + '=Entity;' + mxERC.BUTTON_STYLE + '=' + mxERC.RECT + ';' + mxConstants.STYLE_FONTSIZE + '=17;' + mxConstants.STYLE_FILLCOLOR + '=#008cff;');
+					var v6b = graph.insertVertex(parent, null, 'v6b', 440, 320, 80, 30, s + mxConstants.STYLE_SHAPE + '=' + mxERC.SHAPE_ENTITY + ';' + mxConstants.STYLE_STROKECOLOR + '=#666666;' + mxERC.STYLE_TEXTCOLOR + '=#ffffff;' + mxERC.BUTTON_TEXT + '=Entity;' + mxERC.BUTTON_STYLE + '=' + mxERC.RECT + ';' + mxConstants.STYLE_FONTSIZE + '=17;' + mxConstants.STYLE_FILLCOLOR + '=#008cff;');
+					var e6 = graph.insertEdge(parent, null, '', v6a, v6b, mxConstants.STYLE_ENDARROW + '=' + mxERC.MARKER_ZERO_TO_ONE + ';endFill=1;');
+
+					var v7a = graph.insertVertex(parent, null, 'v7a', 20, 380, 80, 30, s + mxConstants.STYLE_SHAPE + '=' + mxERC.SHAPE_ENTITY + ';' + mxConstants.STYLE_STROKECOLOR + '=#666666;' + mxERC.STYLE_TEXTCOLOR + '=#ffffff;' + mxERC.BUTTON_TEXT + '=Entity;' + mxERC.BUTTON_STYLE + '=' + mxERC.RECT + ';' + mxConstants.STYLE_FONTSIZE + '=17;' + mxConstants.STYLE_FILLCOLOR + '=#008cff;');
+					var v7b = graph.insertVertex(parent, null, 'v7b', 440, 380, 80, 30, s + mxConstants.STYLE_SHAPE + '=' + mxERC.SHAPE_ENTITY + ';' + mxConstants.STYLE_STROKECOLOR + '=#666666;' + mxERC.STYLE_TEXTCOLOR + '=#ffffff;' + mxERC.BUTTON_TEXT + '=Entity;' + mxERC.BUTTON_STYLE + '=' + mxERC.RECT + ';' + mxConstants.STYLE_FONTSIZE + '=17;' + mxConstants.STYLE_FILLCOLOR + '=#008cff;');
+					var e7 = graph.insertEdge(parent, null, '', v7a, v7b, mxConstants.STYLE_ENDARROW + '=' + mxERC.MARKER_MANY + ';endFill=1;');
+
+					var v8a = graph.insertVertex(parent, null, 'v8a', 20, 440, 80, 30, s + mxConstants.STYLE_SHAPE + '=' + mxERC.SHAPE_ENTITY + ';' + mxConstants.STYLE_STROKECOLOR + '=#666666;' + mxERC.STYLE_TEXTCOLOR + '=#ffffff;' + mxERC.BUTTON_TEXT + '=Entity;' + mxERC.BUTTON_STYLE + '=' + mxERC.RECT + ';' + mxConstants.STYLE_FONTSIZE + '=17;' + mxConstants.STYLE_FILLCOLOR + '=#008cff;');
+					var v8b = graph.insertVertex(parent, null, 'v8b', 440, 440, 80, 30, s + mxConstants.STYLE_SHAPE + '=' + mxERC.SHAPE_ENTITY + ';' + mxConstants.STYLE_STROKECOLOR + '=#666666;' + mxERC.STYLE_TEXTCOLOR + '=#ffffff;' + mxERC.BUTTON_TEXT + '=Entity;' + mxERC.BUTTON_STYLE + '=' + mxERC.RECT + ';' + mxConstants.STYLE_FONTSIZE + '=17;' + mxConstants.STYLE_FILLCOLOR + '=#008cff;');
+					var e8 = graph.insertEdge(parent, null, '', v8a, v8b, mxConstants.STYLE_STARTARROW + '=' + mxERC.MARKER_MANY + ';' + mxConstants.STYLE_ENDARROW + '=' + mxERC.MARKER_MANY + ';');
+
+					var v9a = graph.insertVertex(parent, null, 'v9a', 20, 500, 80, 30, s + mxConstants.STYLE_SHAPE + '=' + mxERC.SHAPE_ENTITY + ';' + mxConstants.STYLE_STROKECOLOR + '=#666666;' + mxERC.STYLE_TEXTCOLOR + '=#ffffff;' + mxERC.BUTTON_TEXT + '=Entity;' + mxERC.BUTTON_STYLE + '=' + mxERC.RECT + ';' + mxConstants.STYLE_FONTSIZE + '=17;' + mxConstants.STYLE_FILLCOLOR + '=#008cff;');
+					var v9b = graph.insertVertex(parent, null, 'v9b', 440, 500, 80, 30, s + mxConstants.STYLE_SHAPE + '=' + mxERC.SHAPE_ENTITY + ';' + mxConstants.STYLE_STROKECOLOR + '=#666666;' + mxERC.STYLE_TEXTCOLOR + '=#ffffff;' + mxERC.BUTTON_TEXT + '=Entity;' + mxERC.BUTTON_STYLE + '=' + mxERC.RECT + ';' + mxConstants.STYLE_FONTSIZE + '=17;' + mxConstants.STYLE_FILLCOLOR + '=#008cff;');
+					var e9 = graph.insertEdge(parent, null, '', v9a, v9b, mxConstants.STYLE_STARTARROW + '=' + mxERC.MARKER_ZERO_TO_ONE + ';' + mxConstants.STYLE_ENDARROW + '=' + mxERC.MARKER_ZERO_TO_MANY + ';');
+
+					var v10a = graph.insertVertex(parent, null, 'v10a', 20, 560, 80, 30, s + mxConstants.STYLE_SHAPE + '=' + mxERC.SHAPE_ENTITY + ';' + mxConstants.STYLE_STROKECOLOR + '=#666666;' + mxERC.STYLE_TEXTCOLOR + '=#ffffff;' + mxERC.BUTTON_TEXT + '=Entity;' + mxERC.BUTTON_STYLE + '=' + mxERC.RECT + ';' + mxConstants.STYLE_FONTSIZE + '=17;' + mxConstants.STYLE_FILLCOLOR + '=#008cff;');
+					var v10b = graph.insertVertex(parent, null, 'v10b', 440, 560, 80, 30, s + mxConstants.STYLE_SHAPE + '=' + mxERC.SHAPE_ENTITY + ';' + mxConstants.STYLE_STROKECOLOR + '=#666666;' + mxERC.STYLE_TEXTCOLOR + '=#ffffff;' + mxERC.BUTTON_TEXT + '=Entity;' + mxERC.BUTTON_STYLE + '=' + mxERC.RECT + ';' + mxConstants.STYLE_FONTSIZE + '=17;' + mxConstants.STYLE_FILLCOLOR + '=#008cff;');
+					var e10 = graph.insertEdge(parent, null, '', v10a, v10b, mxConstants.STYLE_STARTARROW + '=' + mxERC.MARKER_MANDATORY_ONE + ';' + mxConstants.STYLE_ENDARROW + '=' + mxERC.MARKER_ZERO_TO_MANY + ';');
+
+					var v11a = graph.insertVertex(parent, null, 'v11a', 20, 620, 80, 30, s + mxConstants.STYLE_SHAPE + '=' + mxERC.SHAPE_ENTITY + ';' + mxConstants.STYLE_STROKECOLOR + '=#666666;' + mxERC.STYLE_TEXTCOLOR + '=#ffffff;' + mxERC.BUTTON_TEXT + '=Entity;' + mxERC.BUTTON_STYLE + '=' + mxERC.RECT + ';' + mxConstants.STYLE_FONTSIZE + '=17;' + mxConstants.STYLE_FILLCOLOR + '=#008cff;');
+					var v11b = graph.insertVertex(parent, null, 'v11b', 440, 620, 80, 30, s + mxConstants.STYLE_SHAPE + '=' + mxERC.SHAPE_ENTITY + ';' + mxConstants.STYLE_STROKECOLOR + '=#666666;' + mxERC.STYLE_TEXTCOLOR + '=#ffffff;' + mxERC.BUTTON_TEXT + '=Entity;' + mxERC.BUTTON_STYLE + '=' + mxERC.RECT + ';' + mxConstants.STYLE_FONTSIZE + '=17;' + mxConstants.STYLE_FILLCOLOR + '=#008cff;');
+					var e11 = graph.insertEdge(parent, null, '', v11a, v11b, mxConstants.STYLE_STARTARROW + '=' + mxERC.MARKER_MANDATORY_ONE + ';' + mxConstants.STYLE_ENDARROW + '=' + mxERC.MARKER_ONE_TO_MANY + ';');
+
+					var v12a = graph.insertVertex(parent, null, 'v12a', 20, 680, 80, 30, s + mxConstants.STYLE_SHAPE + '=' + mxERC.SHAPE_ENTITY + ';' + mxConstants.STYLE_STROKECOLOR + '=#666666;' + mxERC.STYLE_TEXTCOLOR + '=#ffffff;' + mxERC.BUTTON_TEXT + '=Entity;' + mxERC.BUTTON_STYLE + '=' + mxERC.RECT + ';' + mxConstants.STYLE_FONTSIZE + '=17;' + mxConstants.STYLE_FILLCOLOR + '=#008cff;');
+					var v12b = graph.insertVertex(parent, null, 'v12b', 440, 680, 80, 30, s + mxConstants.STYLE_SHAPE + '=' + mxERC.SHAPE_ENTITY + ';' + mxConstants.STYLE_STROKECOLOR + '=#666666;' + mxERC.STYLE_TEXTCOLOR + '=#ffffff;' + mxERC.BUTTON_TEXT + '=Entity;' + mxERC.BUTTON_STYLE + '=' + mxERC.RECT + ';' + mxConstants.STYLE_FONTSIZE + '=17;' + mxConstants.STYLE_FILLCOLOR + '=#008cff;');
+					var e12 = graph.insertEdge(parent, null, '', v12a, v12b, mxConstants.STYLE_STARTARROW + '=' + mxERC.MARKER_ZERO_TO_ONE + ';' + mxConstants.STYLE_ENDARROW + '=' + mxERC.MARKER_ONE_TO_MANY + ';');
+
+					var v13a = graph.insertVertex(parent, null, 'v13a', 20, 740, 80, 30, s + mxConstants.STYLE_SHAPE + '=' + mxERC.SHAPE_ENTITY + ';' + mxConstants.STYLE_STROKECOLOR + '=#666666;' + mxERC.STYLE_TEXTCOLOR + '=#ffffff;' + mxERC.BUTTON_TEXT + '=Entity;' + mxERC.BUTTON_STYLE + '=' + mxERC.RECT + ';' + mxConstants.STYLE_FONTSIZE + '=17;' + mxConstants.STYLE_FILLCOLOR + '=#008cff;');
+					var v13b = graph.insertVertex(parent, null, 'v13b', 440, 740, 80, 30, s + mxConstants.STYLE_SHAPE + '=' + mxERC.SHAPE_ENTITY + ';' + mxConstants.STYLE_STROKECOLOR + '=#666666;' + mxERC.STYLE_TEXTCOLOR + '=#ffffff;' + mxERC.BUTTON_TEXT + '=Entity;' + mxERC.BUTTON_STYLE + '=' + mxERC.RECT + ';' + mxConstants.STYLE_FONTSIZE + '=17;' + mxConstants.STYLE_FILLCOLOR + '=#008cff;');
+					var e13 = graph.insertEdge(parent, null, '', v13a, v13b, mxConstants.STYLE_STARTARROW + '=' + mxERC.MARKER_ONE_TO_MANY + ';' + mxConstants.STYLE_ENDARROW + '=' + mxERC.MARKER_ONE_TO_MANY + ';');
+
+					var v14a = graph.insertVertex(parent, null, 'v14a', 20, 800, 80, 30, s + mxConstants.STYLE_SHAPE + '=' + mxERC.SHAPE_ENTITY + ';' + mxConstants.STYLE_STROKECOLOR + '=#666666;' + mxERC.STYLE_TEXTCOLOR + '=#ffffff;' + mxERC.BUTTON_TEXT + '=Entity;' + mxERC.BUTTON_STYLE + '=' + mxERC.RECT + ';' + mxConstants.STYLE_FONTSIZE + '=17;' + mxConstants.STYLE_FILLCOLOR + '=#008cff;');
+					var v14b = graph.insertVertex(parent, null, 'v14b', 440, 800, 80, 30, s + mxConstants.STYLE_SHAPE + '=' + mxERC.SHAPE_ENTITY + ';' + mxConstants.STYLE_STROKECOLOR + '=#666666;' + mxERC.STYLE_TEXTCOLOR + '=#ffffff;' + mxERC.BUTTON_TEXT + '=Entity;' + mxERC.BUTTON_STYLE + '=' + mxERC.RECT + ';' + mxConstants.STYLE_FONTSIZE + '=17;' + mxConstants.STYLE_FILLCOLOR + '=#008cff;');
+					var e14 = graph.insertEdge(parent, null, '', v14a, v14b, mxConstants.STYLE_STARTARROW + '=' + mxERC.MARKER_ZERO_TO_MANY + ';' + mxConstants.STYLE_ENDARROW + '=' + mxERC.MARKER_ONE_TO_MANY + ';');
+
+					var v9 = graph.insertVertex(parent, null, '', 600, 20, 300, 180, s + mxConstants.STYLE_SHAPE + '=' + mxERC.SHAPE_BACHMANS + ';' + mxConstants.STYLE_STROKECOLOR + '=#666666;' + mxERC.STYLE_TEXTCOLOR + '=#666666;' + mxConstants.STYLE_FONTSIZE + '=17;' + mxConstants.STYLE_FILLCOLOR + '=#ffffff;');
+				}
+				finally
+				{
+					graph.getModel().endUpdate();
+				}
+			}
+		};
+	</script>
+</head>
+<body onload="main(document.getElementById('graphContainer'))">
+	<div id="graphContainer"
+		style="overflow:hidden;position:relative;width:1000px;height:850px;border:1px solid gray;cursor:default;">
+	</div>
+</body>
+</html>
